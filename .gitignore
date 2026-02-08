@@ -5,6 +5,9 @@ __pycache__/
 # Local game data (contains secrets)
 data/config.json
 data/characters/
+# Exported snapshots (may contain sensitive context)
+data/characters/**/expert/
+expert/
 
 # OS
 .DS_Store

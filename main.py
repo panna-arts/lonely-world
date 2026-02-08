@@ -128,11 +128,25 @@ def character_story_path(name: str) -> Path:
     return character_dir(name) / "story.md"
 
 
+def character_export_dir(name: str) -> Path:
+    return character_dir(name) / "expert"
+
+
+def character_export_story_dir(name: str) -> Path:
+    return character_export_dir(name) / "story"
+
+
+def character_export_character_dir(name: str) -> Path:
+    return character_export_dir(name) / "characters"
+
+
 def prepare_character_storage(name: str) -> Dict[str, Path]:
     legacy_path = legacy_character_path(name)
     char_dir = character_dir(name)
     json_path = character_json_path(name)
     story_path = character_story_path(name)
+    export_story_dir = character_export_story_dir(name)
+    export_character_dir = character_export_character_dir(name)
 
     if legacy_path.exists():
         char_dir.mkdir(parents=True, exist_ok=True)
@@ -142,7 +156,16 @@ def prepare_character_storage(name: str) -> Dict[str, Path]:
         else:
             legacy_path.rename(json_path)
 
-    return {"dir": char_dir, "json": json_path, "story": story_path}
+    export_story_dir.mkdir(parents=True, exist_ok=True)
+    export_character_dir.mkdir(parents=True, exist_ok=True)
+
+    return {
+        "dir": char_dir,
+        "json": json_path,
+        "story": story_path,
+        "export_story_dir": export_story_dir,
+        "export_character_dir": export_character_dir,
+    }
 
 
 def create_character(name: str) -> Dict[str, Any]:
@@ -198,6 +221,69 @@ def append_story(path: Path, title: str, content: str) -> None:
         path.write_text(f"# 故事：{title}\n", encoding="utf-8")
     with path.open("a", encoding="utf-8") as handle:
         handle.write(f"\n\n#### {now_ts()}\n\n{content.strip()}\n")
+
+
+def export_story(story_path: Path, export_dir: Path) -> Optional[Path]:
+    if not story_path.exists():
+        return None
+    ts = now_ts().replace(":", "-")
+    export_path = export_dir / f"story_export_{ts}.md"
+    export_path.write_text(story_path.read_text(encoding="utf-8"), encoding="utf-8")
+    return export_path
+
+
+def export_role_summary(character: Dict[str, Any], export_dir: Path) -> Path:
+    ts = now_ts().replace(":", "-")
+    name = character.get("name", "无名")
+    export_path = export_dir / f"character_export_{safe_name(name)}_{ts}.md"
+
+    full_json = json.dumps(character, ensure_ascii=False, indent=2)
+    world_json = json.dumps(character.get("world", {}), ensure_ascii=False, indent=2)
+    state_json = json.dumps(character.get("state", {}), ensure_ascii=False, indent=2)
+    world_qa_json = json.dumps(character.get("world_qa", []), ensure_ascii=False, indent=2)
+    conversation_json = json.dumps(character.get("conversation", []), ensure_ascii=False, indent=2)
+
+    lines = [
+        f"# 角色导出：{name}",
+        "",
+        f"- 导出时间：{now_ts()}",
+        "",
+        "## 基本信息",
+        f"- 角色名称：{name}",
+        f"- 创建时间：{character.get('created_at', '')}",
+        f"- 更新时间：{character.get('updated_at', '')}",
+        "",
+        "## 世界观",
+        "```json",
+        world_json,
+        "```",
+        "",
+        "## 角色状态",
+        "```json",
+        state_json,
+        "```",
+        "",
+        "## 长期记忆摘要",
+        character.get("memory_summary", ""),
+        "",
+        "## 世界观问答",
+        "```json",
+        world_qa_json,
+        "```",
+        "",
+        "## 对话记录",
+        "```json",
+        conversation_json,
+        "```",
+        "",
+        "## 完整 JSON",
+        "```json",
+        full_json,
+        "```",
+    ]
+
+    export_path.write_text("\n".join(lines).strip() + "\n", encoding="utf-8")
+    return export_path
 
 
 def generate_story_append(
@@ -344,17 +430,39 @@ def play_loop(
     character: Dict[str, Any],
     json_path: Path,
     story_path: Path,
+    export_story_dir: Path,
+    export_character_dir: Path,
 ) -> None:
-    print("\n进入游戏。输入 退出 / quit / exit 可结束并保存。\n")
+    print("\n进入游戏。输入 退出 / quit / exit 可结束并保存。")
+    print("快捷命令：故事 / story 查看摘要，导出故事 / export 保存副本，导出角色 / export-role 导出角色。\n")
     while True:
         user_input = input("你：").strip()
         if not user_input:
             continue
-        if user_input.lower() in {"退出", "quit", "exit"}:
+        lower_input = user_input.lower()
+        if lower_input in {"退出", "quit", "exit"}:
             character["updated_at"] = now_ts()
             write_json(json_path, character)
             print("已保存，期待下次继续。")
             return
+        if lower_input in {"故事", "/story", "story"}:
+            story_tail = read_story_tail(story_path, 1200)
+            if story_tail:
+                print("\n故事摘要（最近片段）：\n" + story_tail + "\n")
+            else:
+                print("\n暂无故事内容。\n")
+            continue
+        if lower_input in {"导出故事", "/export", "export"}:
+            export_path = export_story(story_path, export_story_dir)
+            if export_path:
+                print(f"\n故事已导出：{export_path}\n")
+            else:
+                print("\n暂无故事可导出。\n")
+            continue
+        if lower_input in {"导出角色", "/export-role", "export-role"}:
+            export_path = export_role_summary(character, export_character_dir)
+            print(f"\n角色已导出：{export_path}\n")
+            continue
 
         try:
             messages = build_game_messages(character, user_input)
@@ -403,6 +511,8 @@ def main() -> None:
     storage = prepare_character_storage(name)
     json_path = storage["json"]
     story_path = storage["story"]
+    export_story_dir = storage["export_story_dir"]
+    export_character_dir = storage["export_character_dir"]
 
     if json_path.exists():
         character = read_json(json_path, create_character(name))
@@ -427,7 +537,7 @@ def main() -> None:
         write_json(json_path, character)
         print("\n世界观已建立，角色已创建并保存。")
 
-    play_loop(client, model, character, json_path, story_path)
+    play_loop(client, model, character, json_path, story_path, export_story_dir, export_character_dir)
 
 
 if __name__ == "__main__":
