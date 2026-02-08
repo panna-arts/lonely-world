@@ -1,0 +1,10 @@
+# Python
+__pycache__/
+*.pyc
+
+# Local game data (contains secrets)
+data/config.json
+data/characters/
+
+# OS
+.DS_Store

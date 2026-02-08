@@ -57,16 +57,12 @@ def ensure_config(cfg: Dict[str, Any]) -> Dict[str, Any]:
         if cfg.get("api_key") != env_key:
             cfg["api_key"] = env_key
             changed = True
-    else:
-        current_key = cfg.get("api_key")
-        prompt = "请输入大模型 API Key"
-        if current_key:
-            prompt += " (回车保持当前)"
-        key = getpass(prompt + ": ").strip()
+    elif not cfg.get("api_key"):
+        key = getpass("请输入大模型 API Key: ").strip()
         if key:
             cfg["api_key"] = key
             changed = True
-        elif not current_key:
+        else:
             print("未配置 API Key，无法继续。")
             sys.exit(1)
 
@@ -74,19 +70,12 @@ def ensure_config(cfg: Dict[str, Any]) -> Dict[str, Any]:
         if cfg.get("base_url") != env_base:
             cfg["base_url"] = env_base
             changed = True
-    else:
-        current_base = cfg.get("base_url", "")
+    elif not cfg.get("base_url"):
         while True:
-            base_prompt = "请输入 API Base URL"
-            if current_base:
-                base_prompt += " (回车保持当前)"
-            base_url = input(base_prompt + ": ").strip()
+            base_url = input("请输入 API Base URL: ").strip()
             if base_url:
-                if cfg.get("base_url") != base_url:
-                    cfg["base_url"] = base_url
-                    changed = True
-                break
-            if current_base:
+                cfg["base_url"] = base_url
+                changed = True
                 break
             print("Base URL 不能为空。")
 
@@ -94,19 +83,12 @@ def ensure_config(cfg: Dict[str, Any]) -> Dict[str, Any]:
         if cfg.get("model") != env_model:
             cfg["model"] = env_model
             changed = True
-    else:
-        current_model = cfg.get("model") or DEFAULT_MODEL
+    elif not cfg.get("model"):
         while True:
-            model_input = input(f"请输入模型名称 (回车使用 {current_model}): ").strip()
+            model_input = input(f"请输入模型名称 (例如 {DEFAULT_MODEL}): ").strip()
             if model_input:
-                if cfg.get("model") != model_input:
-                    cfg["model"] = model_input
-                    changed = True
-                break
-            if current_model:
-                if cfg.get("model") != current_model:
-                    cfg["model"] = current_model
-                    changed = True
+                cfg["model"] = model_input
+                changed = True
                 break
             print("模型名称不能为空。")
 
@@ -160,6 +142,18 @@ def create_character(name: str) -> Dict[str, Any]:
         "world_qa": [],
         "conversation": [],
     }
+
+
+def show_recent_conversation(character: Dict[str, Any], limit_pairs: int = 6) -> None:
+    records = [m for m in character.get("conversation", []) if m.get("role") in ("user", "assistant")]
+    if not records:
+        return
+    print("\n上次对话回顾：")
+    tail = records[-limit_pairs * 2 :]
+    for msg in tail:
+        role = "你" if msg.get("role") == "user" else character.get("name", "NPC")
+        print(f"{role}：{msg.get('content', '')}")
+    print("")
 
 
 def chat_text(client: OpenAI, model: str, messages: List[Dict[str, str]]) -> str:
@@ -323,6 +317,7 @@ def main() -> None:
     if path.exists():
         character = read_json(path, create_character(name))
         print(f"已载入角色：{character.get('name', name)}")
+        show_recent_conversation(character)
     else:
         character = create_character(name)
         world = build_world(client, model)

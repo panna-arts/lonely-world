@@ -1,4 +1,5 @@
 {
   "api_key": "sk-jNRkx96MZ9Ke19bAVee71G4OMvidJugcguiOF7JCs6TKetTb",
-  "model": "gpt-4o-mini"
+  "model": "claude-opus-4-6-thinking",
+  "base_url": "https://www.dmxapi.cn/v1"
 }
