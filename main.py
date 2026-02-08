@@ -112,8 +112,37 @@ def safe_name(name: str) -> str:
     return cleaned or "无名"
 
 
-def character_path(name: str) -> Path:
+def legacy_character_path(name: str) -> Path:
     return CHAR_DIR / f"{safe_name(name)}.json"
+
+
+def character_dir(name: str) -> Path:
+    return CHAR_DIR / safe_name(name)
+
+
+def character_json_path(name: str) -> Path:
+    return character_dir(name) / "character.json"
+
+
+def character_story_path(name: str) -> Path:
+    return character_dir(name) / "story.md"
+
+
+def prepare_character_storage(name: str) -> Dict[str, Path]:
+    legacy_path = legacy_character_path(name)
+    char_dir = character_dir(name)
+    json_path = character_json_path(name)
+    story_path = character_story_path(name)
+
+    if legacy_path.exists():
+        char_dir.mkdir(parents=True, exist_ok=True)
+        if json_path.exists():
+            backup = char_dir / f"legacy_{now_ts().replace(':', '-')}.json"
+            legacy_path.rename(backup)
+        else:
+            legacy_path.rename(json_path)
+
+    return {"dir": char_dir, "json": json_path, "story": story_path}
 
 
 def create_character(name: str) -> Dict[str, Any]:
@@ -154,6 +183,51 @@ def show_recent_conversation(character: Dict[str, Any], limit_pairs: int = 6) ->
         role = "你" if msg.get("role") == "user" else character.get("name", "NPC")
         print(f"{role}：{msg.get('content', '')}")
     print("")
+
+
+def read_story_tail(path: Path, max_chars: int = 1200) -> str:
+    if not path.exists():
+        return ""
+    text = path.read_text(encoding="utf-8")
+    return text[-max_chars:] if len(text) > max_chars else text
+
+
+def append_story(path: Path, title: str, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not path.exists():
+        path.write_text(f"# 故事：{title}\n", encoding="utf-8")
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(f"\n\n#### {now_ts()}\n\n{content.strip()}\n")
+
+
+def generate_story_append(
+    client: OpenAI,
+    model: str,
+    character: Dict[str, Any],
+    user_input: str,
+    assistant_reply: str,
+    story_path: Path,
+) -> str:
+    story_tail = read_story_tail(story_path, 1200)
+    system = (
+        "你是文学作家，将文字冒险的互动续写成高质量中文文学作品。"
+        "要求语言精炼、有画面感，避免口水与赘述。"
+        "每次续写 1-3 段，总字数约 200-400 字。"
+        "只输出正文，不要标题或额外说明。"
+    )
+    payload = {
+        "character": character.get("name"),
+        "world": character.get("world"),
+        "state": character.get("state"),
+        "memory_summary": character.get("memory_summary"),
+        "world_qa": character.get("world_qa"),
+        "last_story": story_tail,
+        "latest_input": user_input,
+        "latest_reply": assistant_reply,
+    }
+    user = "背景与上下文：" + json.dumps(payload, ensure_ascii=False)
+    story = chat_text(client, model, [{"role": "system", "content": system}, {"role": "user", "content": user}])
+    return story.strip()
 
 
 def chat_text(client: OpenAI, model: str, messages: List[Dict[str, str]]) -> str:
@@ -264,7 +338,13 @@ def build_game_messages(character: Dict[str, Any], user_input: str) -> List[Dict
     return messages
 
 
-def play_loop(client: OpenAI, model: str, character: Dict[str, Any], path: Path) -> None:
+def play_loop(
+    client: OpenAI,
+    model: str,
+    character: Dict[str, Any],
+    json_path: Path,
+    story_path: Path,
+) -> None:
     print("\n进入游戏。输入 退出 / quit / exit 可结束并保存。\n")
     while True:
         user_input = input("你：").strip()
@@ -272,7 +352,7 @@ def play_loop(client: OpenAI, model: str, character: Dict[str, Any], path: Path)
             continue
         if user_input.lower() in {"退出", "quit", "exit"}:
             character["updated_at"] = now_ts()
-            write_json(path, character)
+            write_json(json_path, character)
             print("已保存，期待下次继续。")
             return
 
@@ -296,8 +376,15 @@ def play_loop(client: OpenAI, model: str, character: Dict[str, Any], path: Path)
             if result.get("memory_summary"):
                 character["memory_summary"] = result["memory_summary"]
 
+        try:
+            story_append = generate_story_append(client, model, character, user_input, reply, story_path)
+            if story_append:
+                append_story(story_path, character.get("name", "无名"), story_append)
+        except Exception as exc:  # noqa: BLE001
+            print(f"故事续写失败：{exc}")
+
         character["updated_at"] = now_ts()
-        write_json(path, character)
+        write_json(json_path, character)
         print(f"\n{character['name']}：{reply}\n")
 
 
@@ -313,9 +400,12 @@ def main() -> None:
         print("角色名称不能为空。")
         return
 
-    path = character_path(name)
-    if path.exists():
-        character = read_json(path, create_character(name))
+    storage = prepare_character_storage(name)
+    json_path = storage["json"]
+    story_path = storage["story"]
+
+    if json_path.exists():
+        character = read_json(json_path, create_character(name))
         print(f"已载入角色：{character.get('name', name)}")
         show_recent_conversation(character)
     else:
@@ -334,10 +424,10 @@ def main() -> None:
             f"世界观：时间={character['world']['time']}；地点={character['world']['place']}；"
             f"人物={','.join(character['world']['people'])}。"
         )
-        write_json(path, character)
+        write_json(json_path, character)
         print("\n世界观已建立，角色已创建并保存。")
 
-    play_loop(client, model, character, path)
+    play_loop(client, model, character, json_path, story_path)
 
 
 if __name__ == "__main__":
