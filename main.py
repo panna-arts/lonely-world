@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import sys
@@ -6,13 +7,14 @@ from getpass import getpass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from openai import OpenAI
+from openai import APIConnectionError, APIError, APIStatusError, OpenAI, RateLimitError
 
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "data"
 CHAR_DIR = DATA_DIR / "characters"
 CONFIG_FILE = DATA_DIR / "config.json"
 DEFAULT_MODEL = "gpt-5-mini"
+__version__ = "0.1.0"
 
 
 def now_ts() -> str:
@@ -58,10 +60,15 @@ def ensure_config(cfg: Dict[str, Any]) -> Dict[str, Any]:
             cfg["api_key"] = env_key
             changed = True
     elif not cfg.get("api_key"):
-        key = getpass("请输入大模型 API Key: ").strip()
+        print("\n⚠️  安全提示：")
+        print("  - API Key 将以明文形式存储在本地 data/config.json")
+        print("  - 建议使用环境变量 OPENAI_API_KEY 或 LONELY_WORLD_API_KEY")
+        print("  - 请勿在公共计算机上保存密钥\n")
+        key = getpass("请输入大模型 API Key（输入时不可见）: ").strip()
         if key:
             cfg["api_key"] = key
             changed = True
+            print("✓ API Key 已保存到本地配置文件")
         else:
             print("未配置 API Key，无法继续。")
             sys.exit(1)
@@ -467,8 +474,20 @@ def play_loop(
         try:
             messages = build_game_messages(character, user_input)
             result = chat_json(client, model, messages)
-        except Exception as exc:  # noqa: BLE001
-            print(f"调用失败：{exc}")
+        except RateLimitError:
+            print("⚠️  API 调用频率超限，请稍后重试。")
+            continue
+        except APIStatusError as exc:
+            print(f"⚠️  API 错误（{exc.status_code}）：{exc.message}")
+            continue
+        except APIConnectionError:
+            print("⚠️  无法连接到 API 服务，请检查网络和 Base URL。")
+            continue
+        except APIError as exc:
+            print(f"⚠️  API 调用失败：{exc}")
+            continue
+        except Exception as exc:
+            print(f"⚠️  发生未知错误：{exc}")
             continue
 
         reply = result.get("reply") if isinstance(result, dict) else None
@@ -488,8 +507,16 @@ def play_loop(
             story_append = generate_story_append(client, model, character, user_input, reply, story_path)
             if story_append:
                 append_story(story_path, character.get("name", "无名"), story_append)
-        except Exception as exc:  # noqa: BLE001
-            print(f"故事续写失败：{exc}")
+        except RateLimitError:
+            print("⚠️  故事续写频率超限，跳过本次续写。")
+        except APIStatusError as exc:
+            print(f"⚠️  故事续写 API 错误（{exc.status_code}），跳过本次续写。")
+        except APIConnectionError:
+            print("⚠️  故事续写网络连接失败，跳过本次续写。")
+        except APIError as exc:
+            print(f"⚠️  故事续写失败：{exc}")
+        except Exception as exc:
+            print(f"⚠️  故事续写发生未知错误：{exc}")
 
         character["updated_at"] = now_ts()
         write_json(json_path, character)
@@ -497,6 +524,16 @@ def play_loop(
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(
+        prog="lonely-world",
+        description="一款中文命令行文字探险游戏",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--version", "-v", action="version", version=f"%(prog)s {__version__}"
+    )
+    parser.parse_args()
+
     ensure_dirs()
     cfg = load_config()
     cfg = ensure_config(cfg)
