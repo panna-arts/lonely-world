@@ -1,5 +1,7 @@
 {
-  "api_key": "sk-jNRkx96MZ9Ke19bAVee71G4OMvidJugcguiOF7JCs6TKetTb",
-  "model": "claude-opus-4-6-thinking",
-  "base_url": "https://www.dmxapi.cn/v1"
+  "api_key": "",
+  "base_url": "https://api.example.com/v1",
+  "model": "gpt-4",
+  "provider": "openai",
+  "enable_story_append": false
 }

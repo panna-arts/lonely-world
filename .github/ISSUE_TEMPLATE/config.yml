@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 讨论区
+    url: https://github.com/panna-arts/lonely-world/discussions
+    about: 如果你有使用问题或想分享游戏体验，欢迎到 Discussions 交流

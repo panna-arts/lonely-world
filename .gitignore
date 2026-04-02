@@ -46,10 +46,11 @@ htmlcov/
 dmypy.json
 
 # Local game data (contains secrets)
-data/config.json
-data/characters/
+local/
+data/
 
 # Exported snapshots (may contain sensitive context)
+local/data/characters/**/expert/
 data/characters/**/expert/
 expert/
 

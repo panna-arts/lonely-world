@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lonely-world"
-version = "0.1.0"
+version = "0.2.0"
 description = "一款中文命令行文字探险游戏，没有既定故事线，所有故事由玩家输入与智能体互动推进"
 readme = "README.md"
 license = {text = "MIT"}
@@ -29,9 +29,20 @@ classifiers = [
 ]
 dependencies = [
     "openai>=1.0.0,<2.0.0",
+    "rich>=13.0.0",
+    "keyring>=25.0.0",
 ]
 
 [project.optional-dependencies]
+anthropic = [
+    "anthropic>=0.25.0",
+]
+web = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "python-multipart>=0.0.9",
+    "itsdangerous>=2.1.0",
+]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
@@ -41,7 +52,8 @@ dev = [
 ]
 
 [project.scripts]
-lonely-world = "main:main"
+lonely-world = "lonely_world.cli:main"
+lonely-world-web = "lonely_world.web.main:run"
 
 [project.urls]
 Homepage = "https://github.com/panna-arts/lonely-world"
@@ -50,6 +62,7 @@ Issues = "https://github.com/panna-arts/lonely-world/issues"
 
 [tool.setuptools]
 py-modules = ["main"]
+packages = ["lonely_world", "lonely_world.llm", "lonely_world.game"]
 
 [tool.ruff]
 line-length = 100
@@ -68,6 +81,7 @@ select = [
 ignore = [
     "E501",   # line too long (handled by formatter)
     "B008",   # do not perform function calls in argument defaults
+    "UP045",  # keep Optional[X] for Python 3.9 compatibility
 ]
 
 [tool.mypy]
@@ -82,4 +96,4 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
-addopts = "-v --cov=main --cov-report=term-missing"
+addopts = "-v --cov=lonely_world --cov-report=term-missing"

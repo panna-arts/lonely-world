@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lonely-world 孤独世界</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id="app">
+        <header class="topbar">
+            <div class="brand">lonely-world <span class="version">Web</span></div>
+            <div class="topbar-center">
+                <span id="model-info" class="model-badge">加载中…</span>
+                <label class="toggle">
+                    <input type="checkbox" id="story-append-toggle">
+                    <span>文学续写</span>
+                </label>
+            </div>
+            <div class="topbar-right">
+                <select id="character-select">
+                    <option value="">选择角色</option>
+                </select>
+                <button id="new-char-btn" class="btn btn-primary">新建角色</button>
+            </div>
+        </header>
+
+        <main class="main">
+            <section class="chat-pane">
+                <div id="messages" class="messages"></div>
+                <div class="input-area">
+                    <input id="message-input" type="text" placeholder="输入你的行动或话语…" autocomplete="off">
+                    <button id="send-btn" class="btn btn-primary">发送</button>
+                </div>
+            </section>
+
+            <aside class="sidebar">
+                <div class="card">
+                    <h3>角色状态</h3>
+                    <div id="char-state" class="state-empty">尚未载入角色</div>
+                </div>
+                <div class="card">
+                    <h3>快捷操作</h3>
+                    <div class="actions">
+                        <button class="btn btn-ghost" data-action="help">帮助</button>
+                        <button class="btn btn-ghost" data-action="undo">撤销</button>
+                        <button class="btn btn-ghost" data-action="story">故事</button>
+                        <button class="btn btn-ghost" data-action="export-story">导出故事</button>
+                        <button class="btn btn-ghost" data-action="export-role">导出角色</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>世界观</h3>
+                    <div id="world-info" class="world-empty">—</div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- World building modal -->
+        <div id="world-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>世界观构建</h2>
+                <p class="modal-subtitle">通过 5 轮问答，共同建立游戏世界观</p>
+                <div id="world-step" class="world-step">问题加载中…</div>
+                <input id="world-answer" type="text" placeholder="请输入你的回答…" autocomplete="off">
+                <div id="world-error" class="modal-error hidden"></div>
+                <div class="modal-actions">
+                    <button id="world-submit" class="btn btn-primary">提交回答</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- New character modal -->
+        <div id="new-char-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>👋 欢迎来到孤独世界</h2>
+                <p class="modal-subtitle" id="new-char-guide">你还没有冒险角色，创建第一位角色后即可开始这段独一无二的旅程。</p>
+                <input id="new-char-name" type="text" placeholder="给你的角色起个名字，例如：李逍遥">
+                <div id="new-char-error" class="modal-error hidden"></div>
+                <div class="modal-hint">创建后，你将通过 5 轮问答与 AI 共同构建世界观，随后即可开始游戏。</div>
+                <div class="modal-actions">
+                    <button id="new-char-confirm" class="btn btn-primary">开始创建</button>
+                    <button id="new-char-cancel" class="btn btn-ghost">稍后再说</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

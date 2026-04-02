@@ -1,0 +1,86 @@
+name: Bug 报告
+description: 报告一个影响游戏体验的 bug
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你的反馈！请尽可能详细地填写以下信息，帮助我们快速定位和修复问题。
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 简明扼要地描述你遇到的 bug
+      placeholder: 输入退出命令后游戏没有保存……
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤
+      description: 如何一步步复现这个问题
+      placeholder: |
+        1. 启动游戏 `lonely-world`
+        2. 选择角色 '测试'
+        3. 输入 '退出'
+        4. 发现没有生成存档文件
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+      description: 你期望发生什么
+      placeholder: 应该正常保存并提示“已保存，期待下次继续。”
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为
+      description: 实际发生了什么
+      placeholder: 游戏直接退出，没有任何提示，也没有保存文件
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 版本号
+      description: 运行 `lonely-world --version` 获取版本
+      placeholder: v0.2.0
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python 版本
+      description: 运行 `python3 --version` 获取版本
+      placeholder: Python 3.11.4
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: 操作系统
+      options:
+        - macOS
+        - Windows
+        - Linux
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 相关日志或截图
+      description: 如果有错误日志或终端截图，请贴在这里
+      render: shell

@@ -32,11 +32,11 @@ jobs:
           ruff format --check .
 
       - name: Run mypy
-        run: mypy main.py
+        run: mypy lonely_world
         continue-on-error: true
 
       - name: Run tests
-        run: pytest --cov=main --cov-report=xml
+        run: pytest --cov=lonely_world --cov-report=xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
