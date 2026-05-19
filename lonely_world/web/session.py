@@ -103,7 +103,11 @@ class SessionStore:
         self._names[session_id] = name
 
     def get_story_append(self, session_id: str) -> bool:
-        return self._story_append.get(session_id, self.config.enable_story_append)
+        if self._story_append.get(session_id) is not None:
+            return self._story_append[session_id]
+        if self._config is not None:
+            return self._config.enable_story_append
+        return False
 
     def set_story_append(self, session_id: str, enabled: bool) -> None:
         self._story_append[session_id] = enabled

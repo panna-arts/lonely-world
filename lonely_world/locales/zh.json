@@ -1,0 +1,59 @@
+{
+    "cli": {
+        "help_lines": [
+            "help / ?                显示本帮助信息",
+            "undo / 撤回              撤销上一轮输入并恢复状态",
+            "save <名称> / 存档 <名称>    保存命名快照",
+            "load <名称> / 读档 <名称>    加载命名快照",
+            "saves / 存档列表           列出所有命名快照",
+            "story / 故事              查看 story.md 最近片段",
+            "export / 导出故事           导出故事副本",
+            "export-role / 导出角色       导出角色汇总信息",
+            "quit / 退出                保存并结束游戏"
+        ]
+    },
+    "web": {
+        "help_text": "可用命令：help / undo / save / load / saves / story / export / export-role",
+        "enter_game": "已进入游戏。输入 help 查看命令。",
+        "world_complete": "世界观构建完成，角色已创建。",
+        "undo_success": "已撤回上一轮操作。",
+        "undo_empty": "没有可撤回的操作。",
+        "save_success": "已存档：{name}",
+        "save_fail": "存档失败",
+        "load_success": "已读档：{name}",
+        "load_fail": "存档不存在：{name}",
+        "saves_empty": "暂无命名存档。",
+        "saves_list": "可用存档：{names}",
+        "story_fragment": "故事片段：\n{text}",
+        "story_empty": "暂无故事内容",
+        "memory_compressed": "已自动归档早期对话到长期记忆",
+        "export_story_success": "故事已导出：{path}",
+        "export_role_success": "角色已导出：{path}",
+        "export_fail": "导出失败"
+    },
+    "api": {
+        "char_name_empty": "角色名称不能为空",
+        "char_name_too_long": "角色名称过长",
+        "char_exists": "角色已存在，请直接加载",
+        "char_not_found": "角色不存在",
+        "no_active_game": "没有进行中的游戏，请先选择或创建角色",
+        "world_not_started": "尚未开始世界观构建",
+        "answer_empty": "回答不能为空",
+        "input_too_long": "输入过长（最多{limit}字符）",
+        "message_empty": "消息不能为空",
+        "save_name_empty": "存档名称不能为空",
+        "save_name_too_long": "存档名称过长",
+        "rename_name_empty": "名称不能为空",
+        "api_key_missing": "API Key 未配置。请设置环境变量 OPENAI_API_KEY 或 LONELY_WORLD_API_KEY。",
+        "base_url_missing": "Base URL 未配置。请设置环境变量 OPENAI_BASE_URL 或 LONELY_WORLD_BASE_URL。",
+        "model_missing": "模型名称未配置。请设置环境变量 LONELY_WORLD_MODEL。"
+    },
+    "world_builder": {
+        "round_label": "世界观问答 {current}/5",
+        "enter_world_build": "进入世界观构建（5 轮问答）",
+        "system_zh": "你是世界观构建引导者。通过 5 轮问答引导玩家共同建立世界观，必须覆盖时间、地点、人物与社会风貌。现在是第 {round_index}/5 轮。只输出一个简短问题，不要附加说明。",
+        "system_en": "You are a world-building guide. Through 5 rounds of Q&A you will help the player establish the world's setting, covering time, place, people, and social norms. Now is round {round_index}/5. Output only one short question, no explanations.",
+        "user_zh": "已收集问答：{qa}。请给出本轮问题。",
+        "user_en": "Collected Q&A: {qa}. Please give this round's question."
+    }
+}

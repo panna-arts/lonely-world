@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "7860:7860"
+    environment:
+      - LONELY_WORLD_SESSION_SECRET=${LONELY_WORLD_SESSION_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      - LONELY_WORLD_MODEL=${LONELY_WORLD_MODEL:-gpt-4o-mini}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

@@ -2,7 +2,7 @@
 
 from unittest.mock import MagicMock
 
-from lonely_world.game.world import build_world, generate_world_question, summarize_world
+from lonely_world.game.world import WorldBuilder, build_world, generate_world_question, summarize_world
 from lonely_world.models import World
 
 
@@ -12,6 +12,15 @@ class TestGenerateWorldQuestion:
         client.chat_text.return_value = '  "故事发生在什么时代？"  '
         result = generate_world_question(client, [], 1)
         assert result == "故事发生在什么时代？"
+
+    def test_locale_passed_through(self):
+        client = MagicMock()
+        client.chat_text.return_value = "question"
+        generate_world_question(client, [], 1, locale="en")
+        # Verify the prompt was for English locale
+        call_args = client.chat_text.call_args[0][0]
+        system_content = call_args[0]["content"]
+        assert "Q&A" in system_content or "world-building" in system_content.lower()
 
 
 class TestSummarizeWorld:
@@ -57,3 +66,25 @@ class TestBuildWorld:
         world, qa = build_world(client)
         assert world.time == "古代"
         assert len(qa) == 5
+
+
+class TestWorldBuilder:
+    def test_locale_defaults_to_zh(self):
+        client = MagicMock()
+        client.chat_text.return_value = "question"
+        builder = WorldBuilder(client)
+        assert builder.locale == "zh"
+
+    def test_locale_set_explicitly(self):
+        client = MagicMock()
+        client.chat_text.return_value = "question"
+        builder = WorldBuilder(client, locale="en")
+        assert builder.locale == "en"
+
+    def test_five_rounds_required(self):
+        client = MagicMock()
+        client.chat_text_async = MagicMock(return_value="question")
+        builder = WorldBuilder(client)
+        for i in range(5):
+            builder.submit_answer(f"answer{i}")  # Need to set current question first
+        assert not builder.is_complete()

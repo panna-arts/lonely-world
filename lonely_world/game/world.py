@@ -1,24 +1,35 @@
 """World-building logic."""
 
+from typing import Optional
+
 from rich.console import Console
 
 from lonely_world.game import prompts
+from lonely_world.i18n import get_locale
 from lonely_world.llm.base import LLMProvider
 from lonely_world.models import World
 
 console = Console()
 
 
-def generate_world_question(client: LLMProvider, qa: list, round_index: int) -> str:
-    system, user = prompts.world_building_question(round_index, qa)
+def generate_world_question(
+    client: LLMProvider, qa: list, round_index: int, locale: Optional[str] = None
+) -> str:
+    if locale is None:
+        locale = get_locale()
+    system, user = prompts.world_building_question(round_index, qa, locale)
     question = client.chat_text(
         [{"role": "system", "content": system}, {"role": "user", "content": user}]
     )
     return question.strip().strip('"').strip("'")
 
 
-async def generate_world_question_async(client: LLMProvider, qa: list, round_index: int) -> str:
-    system, user = prompts.world_building_question(round_index, qa)
+async def generate_world_question_async(
+    client: LLMProvider, qa: list, round_index: int, locale: Optional[str] = None
+) -> str:
+    if locale is None:
+        locale = get_locale()
+    system, user = prompts.world_building_question(round_index, qa, locale)
     question = await client.chat_text_async(
         [{"role": "system", "content": system}, {"role": "user", "content": user}]
     )
@@ -77,21 +88,22 @@ def build_world(client: LLMProvider) -> tuple[World, list]:
 class WorldBuilder:
     """Event-driven world builder for Web UI."""
 
-    def __init__(self, client: LLMProvider) -> None:
+    def __init__(self, client: LLMProvider, locale: Optional[str] = None) -> None:
         self.client = client
+        self.locale = locale or get_locale()
         self.qa: list[dict[str, str]] = []
         self.current_question: str = ""
         self.step = 0  # 0..5, step means how many Q&A pairs completed
 
     def next_question_sync(self) -> str:
         self.step += 1
-        question = generate_world_question(self.client, self.qa, self.step)
+        question = generate_world_question(self.client, self.qa, self.step, self.locale)
         self.current_question = question
         return question
 
     async def next_question_async(self) -> str:
         self.step += 1
-        question = await generate_world_question_async(self.client, self.qa, self.step)
+        question = await generate_world_question_async(self.client, self.qa, self.step, self.locale)
         self.current_question = question
         return question
 

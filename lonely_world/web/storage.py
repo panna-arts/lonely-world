@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 from lonely_world.models import Character
-from lonely_world.storage import _read_json, safe_name, save_character
+from lonely_world.storage import _read_json, _write_json, now_ts, safe_name, save_character
 
 BASE_DIR = Path(__file__).parent.parent.parent
 DATA_DIR = BASE_DIR / "local" / "data"
@@ -16,31 +16,29 @@ class SessionStorage:
 
     def __init__(self, session_id: str) -> None:
         self.session_id = session_id
-        self.base_dir = DATA_DIR / "sessions" / session_id
-        self.char_dir = self.base_dir / "characters"
+        self.char_dir = DATA_DIR / "sessions" / session_id / "characters"
 
-    def ensure_dirs(self) -> None:
+    def _ensure_dirs(self) -> None:
         self.char_dir.mkdir(parents=True, exist_ok=True)
 
-    def _character_dir(self, name: str) -> Path:
+    def _char_dir(self, name: str) -> Path:
         return self.char_dir / safe_name(name)
 
     def _json_path(self, name: str) -> Path:
-        return self._character_dir(name) / "character.json"
+        return self._char_dir(name) / "character.json"
 
     def _story_path(self, name: str) -> Path:
-        return self._character_dir(name) / "story.md"
+        return self._char_dir(name) / "story.md"
 
     def list_characters(self) -> list[str]:
-        self.ensure_dirs()
-        names = []
-        for path in self.char_dir.iterdir():
-            if path.is_dir() and (path / "character.json").exists():
-                names.append(path.name)
-        return sorted(names)
+        self._ensure_dirs()
+        return [
+            p.name for p in self.char_dir.iterdir()
+            if p.is_dir() and (p / "character.json").exists()
+        ]
 
     def prepare_character_storage(self, name: str) -> dict[str, Path]:
-        char_dir = self._character_dir(name)
+        char_dir = self._char_dir(name)
         json_path = self._json_path(name)
         story_path = self._story_path(name)
         export_dir = char_dir / "expert"
@@ -66,15 +64,15 @@ class SessionStorage:
         return Character.from_dict(raw)
 
     def delete_character(self, name: str) -> bool:
-        char_dir = self._character_dir(name)
+        char_dir = self._char_dir(name)
         if char_dir.exists():
             shutil.rmtree(char_dir)
             return True
         return False
 
     def rename_character(self, old_name: str, new_name: str) -> bool:
-        old_dir = self._character_dir(old_name)
-        new_dir = self._character_dir(new_name)
+        old_dir = self._char_dir(old_name)
+        new_dir = self._char_dir(new_name)
         if not old_dir.exists() or new_dir.exists():
             return False
         old_dir.rename(new_dir)

@@ -1,29 +1,15 @@
 """OpenAI-compatible LLM provider."""
 
-import json
 import logging
-from typing import Any, Optional, cast
+from typing import Any, AsyncIterator, cast
 
 from openai import AsyncOpenAI, OpenAI
 
+from lonely_world.llm._utils import parse_json
 from lonely_world.llm.base import LLMProvider
 from lonely_world.llm.retry import with_retry, with_retry_async
 
 logger = logging.getLogger(__name__)
-
-
-def _parse_json(text: str) -> Optional[dict[str, Any]]:
-    try:
-        return cast(dict[str, Any], json.loads(text))
-    except json.JSONDecodeError:
-        start = text.find("{")
-        end = text.rfind("}")
-        if start != -1 and end != -1 and end > start:
-            try:
-                return cast(dict[str, Any], json.loads(text[start : end + 1]))
-            except json.JSONDecodeError:
-                return None
-    return None
 
 
 class OpenAIProvider(LLMProvider):
@@ -55,7 +41,7 @@ class OpenAIProvider(LLMProvider):
             response_format={"type": "json_object"},
         )
         content = completion.choices[0].message.content or "{}"
-        parsed = _parse_json(content)
+        parsed = parse_json(content)
         return parsed or {}
 
     @with_retry_async(max_retries=2, base_delay=1.0)
@@ -75,5 +61,20 @@ class OpenAIProvider(LLMProvider):
             response_format={"type": "json_object"},
         )
         content = completion.choices[0].message.content or "{}"
-        parsed = _parse_json(content)
+        parsed = parse_json(content)
         return parsed or {}
+
+    @with_retry_async(max_retries=2, base_delay=1.0)
+    async def chat_text_stream_async(
+        self, messages: list[dict[str, str]]
+    ) -> AsyncIterator[str]:
+        logger.debug("OpenAI chat_text_stream_async request with %d messages", len(messages))
+        stream = await self.async_client.chat.completions.create(
+            model=self.model,
+            messages=cast(Any, messages),
+            stream=True,
+        )
+        async for chunk in stream:
+            content = chunk.choices[0].delta.content
+            if content:
+                yield content

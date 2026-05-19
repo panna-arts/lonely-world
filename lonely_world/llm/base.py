@@ -1,7 +1,7 @@
 """Base LLM provider interface."""
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, AsyncIterator
 
 
 class LLMProvider(ABC):
@@ -30,4 +30,11 @@ class LLMProvider(ABC):
     @abstractmethod
     async def chat_json_async(self, messages: list[dict[str, str]]) -> dict[str, Any]:
         """Asynchronously send messages and return parsed JSON response."""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def chat_text_stream_async(
+        self, messages: list[dict[str, str]]
+    ) -> AsyncIterator[str]:
+        """Asynchronously stream text response yieldng chunks."""
         raise NotImplementedError

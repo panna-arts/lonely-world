@@ -259,17 +259,22 @@ async function sendMessage() {
             } else if (event.type === 'error') {
                 hideThinking();
                 appendMessage('error', event.message);
-            } else if (event.type === 'done') {
+            } else if (event.type === ‘done’) {
                 hideThinking();
                 if (event.reply && assistantDiv) {
                     assistantText = event.reply;
                     assistantDiv.innerHTML = markdownToHtml(assistantText);
                 }
-                // Update state display if changed
+                // Reload character state if it changed
                 if (event.state_updated || event.world_updated) {
-                    // reload character state from backend implicitly next load,
-                    // but for now we can’t easily get it without an extra call.
-                    // Just show a subtle hint.
+                    // Re-render character panel with the updated state
+                    try {
+                        const res = await fetch(`${API_BASE}/api/load`);
+                        const data = await res.json();
+                        if (data.ok && data.character) {
+                            renderCharacter(data.character);
+                        }
+                    } catch (_) {}
                 }
             }
         }
@@ -280,7 +285,7 @@ async function sendMessage() {
 async function doAction(action) {
     if (action === 'help') {
         appendMessage('system',
-            '可用命令：help / undo / story / export / export-role / quit');
+            '可用命令：help / undo / save / load / saves / story / export / export-role');
         return;
     }
     if (action === 'undo') {
@@ -290,7 +295,43 @@ async function doAction(action) {
             messagesEl.lastElementChild?.remove();
             messagesEl.lastElementChild?.remove();
         } else {
-            appendMessage('error', '没有可撤回的操作。');
+            appendMessage('error', data.error || '没有可撤回的操作。');
+        }
+        return;
+    }
+    if (action === 'save') {
+        const name = prompt('请输入存档名称：');
+        if (!name) return;
+        const data = await api('/api/saves', { name });
+        if (data.ok) {
+            appendMessage('system', `已存档：${name}`);
+        } else {
+            appendMessage('error', data.error || '存档失败');
+        }
+        return;
+    }
+    if (action === 'load') {
+        const name = prompt('请输入要加载的存档名称：');
+        if (!name) return;
+        const data = await api('/api/saves/load', { name });
+        if (data.ok) {
+            appendMessage('system', `已读档：${name}`);
+        } else {
+            appendMessage('error', data.error || '读档失败');
+        }
+        return;
+    }
+    if (action === 'saves') {
+        const data = await apiGet('/api/saves');
+        if (!data.ok) {
+            appendMessage('error', data.error || '获取存档列表失败');
+            return;
+        }
+        const saves = data.saves || [];
+        if (saves.length === 0) {
+            appendMessage('system', '暂无命名存档。');
+        } else {
+            appendMessage('system', `可用存档：${saves.join('、')}`);
         }
         return;
     }

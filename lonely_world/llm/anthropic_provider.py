@@ -1,27 +1,13 @@
 """Anthropic Claude LLM provider."""
 
-import json
 import logging
-from typing import Any, Optional, cast
+from typing import Any, AsyncIterator, cast
 
+from lonely_world.llm._utils import parse_json
 from lonely_world.llm.base import LLMProvider
 from lonely_world.llm.retry import with_retry, with_retry_async
 
 logger = logging.getLogger(__name__)
-
-
-def _parse_json(text: str) -> Optional[dict[str, Any]]:
-    try:
-        return cast(dict[str, Any], json.loads(text))
-    except json.JSONDecodeError:
-        start = text.find("{")
-        end = text.rfind("}")
-        if start != -1 and end != -1 and end > start:
-            try:
-                return cast(dict[str, Any], json.loads(text[start : end + 1]))
-            except json.JSONDecodeError:
-                return None
-    return None
 
 
 class AnthropicProvider(LLMProvider):
@@ -92,7 +78,7 @@ class AnthropicProvider(LLMProvider):
         for block in response.content:
             if hasattr(block, "text"):
                 content += block.text
-        parsed = _parse_json(content)
+        parsed = parse_json(content)
         return parsed or {}
 
     @with_retry_async(max_retries=2, base_delay=1.0)
@@ -131,5 +117,22 @@ class AnthropicProvider(LLMProvider):
         for block in response.content:
             if hasattr(block, "text"):
                 content += block.text
-        parsed = _parse_json(content)
+        parsed = parse_json(content)
         return parsed or {}
+
+    async def chat_text_stream_async(
+        self, messages: list[dict[str, str]]
+    ) -> AsyncIterator[str]:
+        logger.debug("Anthropic chat_text_stream_async request with %d messages", len(messages))
+        system_prompt, claude_messages = self._convert_messages(messages)
+        kwargs: dict[str, Any] = {
+            "model": self.model,
+            "max_tokens": 4096,
+            "messages": claude_messages,
+        }
+        if system_prompt:
+            kwargs["system"] = system_prompt
+        async with self.async_client.messages.stream(**kwargs) as stream:
+            async for text_event in stream.text_stream:
+                if text_event:
+                    yield text_event

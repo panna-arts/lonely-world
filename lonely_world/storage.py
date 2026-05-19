@@ -29,6 +29,9 @@ def _read_json(path: Path, default: dict) -> dict:
     try:
         return json.loads(path.read_text(encoding="utf-8"))  # type: ignore[no-any-return]
     except json.JSONDecodeError:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning("Failed to parse JSON from %s, returning default", path)
         return default
 
 

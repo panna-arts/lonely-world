@@ -3,17 +3,15 @@
 import json
 from typing import TYPE_CHECKING
 
+from lonely_world.i18n import _ as i18n_
+
 if TYPE_CHECKING:
     from lonely_world.models import Character
 
 
-def world_building_question(round_index: int, qa: list) -> tuple[str, str]:
-    system = (
-        "你是世界观构建引导者。通过 5 轮问答引导玩家共同建立世界观，"
-        "必须覆盖时间、地点、人物与社会风貌。现在是第 "
-        f"{round_index}/5 轮。只输出一个简短问题，不要附加说明。"
-    )
-    user = "已收集问答：" + json.dumps(qa, ensure_ascii=False) + "。请给出本轮问题。"
+def world_building_question(round_index: int, qa: list, locale: str = "zh") -> tuple[str, str]:
+    system = i18n_("world_builder.system_" + locale, locale=locale, round_index=round_index)
+    user = i18n_("world_builder.user_" + locale, locale=locale, qa=json.dumps(qa, ensure_ascii=False))
     return system, user
 
 

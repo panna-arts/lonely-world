@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, AsyncIterator, Optional
 
 from lonely_world.game import memory, prompts
 from lonely_world.llm.base import LLMProvider
@@ -52,6 +52,7 @@ class GameEngine:
         self.export_character_dir = export_character_dir
         self.enable_story_append = enable_story_append
         self.history_stack: list[Character] = []
+        self._named_snapshots: dict[str, Character] = {}
 
     def _build_game_messages(self, user_input: str) -> list[dict[str, str]]:
         recent = memory.select_conversation_context(
@@ -107,6 +108,40 @@ class GameEngine:
         ):
             setattr(self.character, attr, getattr(restored, attr))
         save_character(self.character, self.json_path)
+        return True
+
+    def save_named(self, name: str) -> None:
+        """Create a named snapshot for later restore."""
+        self._named_snapshots[name] = Character.from_dict(self.character.to_dict())
+
+    def load_named(self, name: str) -> bool:
+        """Restore a named snapshot. Returns False if not found."""
+        if name not in self._named_snapshots:
+            return False
+        restored = self._named_snapshots[name]
+        for attr in (
+            "name",
+            "world",
+            "state",
+            "memory_summary",
+            "world_qa",
+            "conversation",
+            "created_at",
+            "updated_at",
+        ):
+            setattr(self.character, attr, getattr(restored, attr))
+        save_character(self.character, self.json_path)
+        return True
+
+    def list_named_saves(self) -> list[str]:
+        """List names of all named snapshots."""
+        return sorted(self._named_snapshots.keys())
+
+    def delete_named(self, name: str) -> bool:
+        """Delete a named snapshot. Returns False if not found."""
+        if name not in self._named_snapshots:
+            return False
+        del self._named_snapshots[name]
         return True
 
     def read_story_tail(self, max_chars: int = 1200) -> str:
@@ -208,6 +243,63 @@ class GameEngine:
         await self._maybe_append_story_async(user_input, reply, result)
         save_character(self.character, self.json_path)
         return result
+
+    async def process_turn_stream_text(self, user_input: str) -> AsyncIterator[dict]:
+        """Streaming turn: parses JSON from real token stream for real-time UX.
+
+        Uses chat_text_stream_async with a text prompt, parses streamed JSON
+        for structured data, and yields chunks as tokens arrive.
+
+        Yields dicts with 'type' field: thinking, chunk, done, error.
+        """
+        yield {"type": "thinking"}
+
+        messages = self._build_game_messages(user_input)
+        result = TurnResult()
+        buffer = ""
+
+        try:
+            async for chunk_text in self.client.chat_text_stream_async(messages):
+                buffer += chunk_text
+                yield {"type": "chunk", "text": chunk_text}
+
+            if not buffer.strip():
+                yield {"type": "error", "message": "智能体没有返回有效内容"}
+                return
+
+            # Parse JSON from the streamed response
+            parsed = self._parse_streamed_json(buffer)
+            if not parsed:
+                yield {"type": "error", "message": "无法解析智能体响应"}
+                return
+
+            api_result = parsed
+            reply = api_result.get("reply") if isinstance(api_result, dict) else None
+            if not reply:
+                yield {"type": "error", "message": "智能体没有返回有效内容"}
+                return
+
+            self._apply_api_result(user_input, api_result, result)
+            await self._maybe_append_story_async(user_input, reply, result)
+            save_character(self.character, self.json_path)
+
+            yield {
+                "type": "done",
+                "reply": reply,
+                "state_updated": result.state_updated,
+                "world_updated": result.world_updated,
+                "memory_summary": result.memory_summary,
+                "story_appended": result.story_appended,
+            }
+
+        except Exception as exc:
+            yield {"type": "error", "message": _classify_error(exc)}
+
+    def _parse_streamed_json(self, text: str):
+        """Try to parse JSON from streamed text that may be partial or wrapped."""
+        from lonely_world.llm._utils import parse_json
+
+        return parse_json(text)
 
     async def process_turn_stream(self, user_input: str):
         """Asynchronous streaming turn processing yielding event dicts."""
