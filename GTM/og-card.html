@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0;width:1200px;height:630px;overflow:hidden}
+  body{
+    background:#0d0a07;position:relative;font-family:'Noto Serif SC','Songti SC',serif;color:#efe5d0;
+    -webkit-font-smoothing:antialiased;
+  }
+  .glow{
+    position:absolute;top:-220px;right:-160px;width:820px;height:820px;
+    background:radial-gradient(circle,rgba(232,163,76,.20) 0%,rgba(232,163,76,.06) 42%,transparent 68%);
+  }
+  .noise{
+    position:absolute;inset:0;opacity:.05;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .mountains{position:absolute;bottom:-2px;left:0;pointer-events:none;opacity:.8}
+  .brand{position:absolute;top:56px;left:64px;display:flex;align-items:center;gap:18px}
+  .seal{
+    width:64px;height:64px;display:grid;place-items:center;background:#c2503a;color:#fff4e4;
+    font-weight:900;font-size:36px;border-radius:9px;transform:rotate(-4deg);
+    box-shadow:0 4px 24px rgba(194,80,58,.45);
+  }
+  .brand-t b{display:block;font-size:27px;font-weight:900;letter-spacing:.08em}
+  .brand-t small{display:block;font-family:'JetBrains Mono',monospace;font-size:12px;color:#6e6150;letter-spacing:.34em;margin-top:3px}
+  .vtext{
+    position:absolute;right:58px;top:52px;writing-mode:vertical-rl;
+    letter-spacing:.42em;font-size:17px;color:rgba(164,147,122,.6);
+  }
+  .vtext b{color:rgba(232,163,76,.75);font-weight:600}
+  h1{position:absolute;left:64px;top:212px;margin:0;font-size:82px;line-height:1.26;font-weight:900;letter-spacing:.02em}
+  h1 .hl{color:#ffc272;
+    background:linear-gradient(90deg,rgba(232,163,76,.20),rgba(194,80,58,.14));
+    box-decoration-break:clone;-webkit-box-decoration-break:clone;padding:.04em .1em;margin-left:-.1em;
+  }
+  .sub{position:absolute;left:66px;top:486px;font-size:22px;color:#a4937a;letter-spacing:.05em}
+  .sub b{color:#efe5d0;font-weight:600}
+  .foot{
+    position:absolute;left:64px;bottom:40px;font-family:'JetBrains Mono',monospace;
+    font-size:14.5px;color:#6e6150;letter-spacing:.1em;
+  }
+  .foot .dollar{color:#e8a34c}
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <svg class="mountains" viewBox="0 0 1200 120" width="1200" height="120">
+    <path d="M0 120 L0 78 Q 100 44 210 66 Q 300 84 400 60 Q 520 30 640 62 Q 730 84 830 62 Q 950 36 1070 66 Q 1140 84 1200 62 L1200 120 Z" fill="#120e09"/>
+    <path d="M0 120 L0 98 Q 140 74 300 92 Q 460 108 620 88 Q 780 68 940 94 Q 1080 112 1200 86 L1200 120 Z" fill="#171209"/>
+  </svg>
+  <div class="brand">
+    <span class="seal">孤</span>
+    <span class="brand-t"><b>孤独世界</b><small>LONELY-WORLD</small></span>
+  </div>
+  <span class="vtext">万 卷 山 河 · <b>尽 在 你 笔</b></span>
+  <h1>没有既定剧情的<br><span class="hl">中文 AI 文字冒险</span></h1>
+  <p class="sub"><b>世界由你共创</b> · 记忆归你保管 · 故事存在你自己的电脑里</p>
+  <p class="foot"><span class="dollar">$</span> pip install lonely-world&nbsp;&nbsp;·&nbsp;&nbsp;github.com/panna-arts/lonely-world&nbsp;&nbsp;·&nbsp;&nbsp;MIT 开源</p>
+  <div class="noise"></div>
+</body>
+</html>

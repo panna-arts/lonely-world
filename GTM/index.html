@@ -8,7 +8,12 @@
 <meta property="og:title" content="孤独世界 lonely-world — 没有既定剧情的中文 AI 文字冒险游戏">
 <meta property="og:description" content="输入你的动作，世界即时回应。角色、恩怨与世界观永久保存在你自己的电脑里。每一次开局，都是一个只属于你的故事。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://github.com/panna-arts/lonely-world">
+<meta property="og:url" content="https://yk5p80w5xvod.meoo.fun">
+<meta property="og:image" content="https://yk5p80w5xvod.meoo.fun/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://yk5p80w5xvod.meoo.fun/og-card.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -210,6 +215,65 @@
     html{scroll-behavior:auto}
   }
 
+  /* ============ 试玩 DEMO ============ */
+  .demo-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start}
+  .demo-win{background:#0a0805;border:1px solid rgba(232,163,76,.16);border-radius:14px;
+    box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.04);overflow:hidden}
+  .demo-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(232,163,76,.05);border-bottom:1px solid var(--line-soft)}
+  .demo-bar i{width:11px;height:11px;border-radius:50%;background:#3a3227}
+  .demo-bar i:first-child{background:var(--ember)}
+  .demo-bar i:nth-child(2){background:var(--amber)}
+  .demo-bar i:nth-child(3){background:var(--jade)}
+  .demo-bar span{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.12em}
+  .demo-body{padding:26px 28px 30px;font-family:var(--mono);font-size:13.5px;line-height:2.05;min-height:400px}
+  .d-para{margin:0 0 1.1em;color:#b7a789}
+  .d-para.d-you{color:#e8d9b8}
+  .d-para.d-you::before{content:"你：";color:var(--amber-hi);font-weight:700}
+  .d-para.d-say{color:#d8c9a8}
+  .demo-choices{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+  .choice{
+    display:flex;align-items:center;gap:12px;text-align:left;
+    background:rgba(232,163,76,.05);border:1px solid rgba(232,163,76,.22);border-radius:10px;
+    padding:12px 16px;color:#e8d9b8;font-family:var(--mono);font-size:13px;line-height:1.7;
+    cursor:pointer;opacity:0;transform:translateY(8px);animation:chIn .45s ease forwards;
+    transition:border-color .2s,background .2s,transform .2s;
+  }
+  .choice:hover,.choice:focus-visible{border-color:var(--amber);background:rgba(232,163,76,.12);transform:translateY(-1px);outline:none}
+  .choice .cn{color:var(--amber);font-weight:700;flex:none}
+  @keyframes chIn{to{opacity:1;transform:none}}
+  .demo-end{border-top:1px solid var(--line);margin:6px 28px 30px;padding-top:24px;font-family:var(--serif);animation:endIn .6s ease both}
+  @keyframes endIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .demo-end p{font-size:14.5px;color:var(--muted);line-height:2;margin-bottom:18px}
+  .demo-end p b{color:var(--paper)}
+  .demo-end .cta-row{margin-bottom:16px}
+  .demo-end .install-pill{font-size:12.5px}
+  .restart{
+    font-family:var(--mono);font-size:11.5px;color:var(--faint);letter-spacing:.1em;cursor:pointer;
+    background:none;border:none;border-bottom:1px dashed var(--faint);padding:2px 0;transition:color .2s;
+  }
+  .restart:hover{color:var(--amber-hi)}
+  .demo-side{position:sticky;top:88px}
+  .side-card{background:linear-gradient(180deg,var(--card) 0%,var(--bg-2) 100%);border:1px solid var(--line-soft);border-radius:14px;padding:24px 22px}
+  .side-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+  .side-title{font-weight:700;font-size:16px}
+  .side-note{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.08em}
+  .chip-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line-soft);font-size:12.5px}
+  .chip-row .k{color:var(--faint);letter-spacing:.18em;font-family:var(--mono);font-size:11px}
+  .chip-row .v{color:var(--amber-hi);padding:1px 8px;border-radius:6px}
+  .chip-row .v.up{animation:vflash 1s ease}
+  @keyframes vflash{0%{background:rgba(232,163,76,.3)}100%{background:transparent}}
+  .side-sub{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.2em;margin:16px 0 12px;padding-top:14px;border-top:1px solid var(--line-soft)}
+  .marks{display:flex;flex-wrap:wrap;gap:8px;min-height:26px}
+  .mark{border:1px solid rgba(232,163,76,.35);border-radius:99px;padding:3px 12px;font-family:var(--mono);font-size:10.5px;color:var(--amber-hi);letter-spacing:.12em;animation:chIn .45s both}
+  .mark-empty{border-style:dashed;color:var(--faint)}
+  .side-foot{margin-top:16px;font-size:12px;color:var(--faint);line-height:1.9}
+  @media(max-width:880px){
+    .demo-grid{grid-template-columns:1fr}
+    .demo-side{position:static}
+    .demo-body{min-height:340px;padding:22px 20px 26px}
+    .demo-end{margin:6px 20px 26px}
+  }
+
   /* ============ 痛点 ============ */
   .pains{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:20px}
   .pain{
@@ -390,6 +454,7 @@
       <span>孤独世界<small>lonely-world</small></span>
     </a>
     <div class="nav-links">
+      <a href="#demo">试玩</a>
       <a href="#why">为什么</a>
       <a href="#who">为谁而做</a>
       <a href="#features">特性</a>
@@ -447,6 +512,43 @@
 </header>
 
 <main>
+<!-- ================= 试玩 DEMO ================= -->
+<section id="demo">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">DEMO · 不用安装</span>
+      <h2>先推一次门，<em>试试</em></h2>
+      <p class="lead">下面是一段按真实游玩流程预生成的交互试玩：每一次选择，世界都会回应，状态都会被记住。安装之后，剧情不再有剧本。</p>
+    </div>
+    <div class="demo-grid reveal">
+      <div class="demo-win" id="demoRoot" aria-label="交互式试玩">
+        <div class="demo-bar"><i></i><i></i><i></i><span>孤独世界 — 交互试玩</span></div>
+        <div class="demo-body" id="demoBody"></div>
+        <div class="demo-end" id="demoEnd" hidden>
+          <p>在真实的孤独世界里，<b>这一切才刚刚开始</b>：你的选择会沉淀进角色档案，三个月后回来，江湖还记得今晚。写坏了也不要紧——<b>undo</b> 可以反悔，存档永远在你自己的硬盘里。</p>
+          <div class="cta-row">
+            <span class="install-pill"><span><span class="dollar">$</span> pip install lonely-world</span><button class="copy-btn" data-copy="pip install lonely-world">复制</button></span>
+          </div>
+          <button class="restart" id="demoRestart">↺ 重新走一遍，试试别的选择</button>
+        </div>
+      </div>
+      <aside class="demo-side">
+        <div class="side-card">
+          <div class="side-head"><span class="side-title">角色档案</span><span class="side-note">示意 · 真实存档在本机</span></div>
+          <div class="chip-row"><span class="k">身份</span><span class="v" data-k="身份">—</span></div>
+          <div class="chip-row"><span class="k">银钱</span><span class="v" data-k="银钱">—</span></div>
+          <div class="chip-row"><span class="k">线索</span><span class="v" data-k="线索">—</span></div>
+          <div class="chip-row"><span class="k">恩怨</span><span class="v" data-k="恩怨">—</span></div>
+          <div class="chip-row"><span class="k">时辰</span><span class="v" data-k="时辰">—</span></div>
+          <div class="side-sub">剧情印记</div>
+          <div class="marks" id="demoMarks"><span class="mark mark-empty">尚未落子</span></div>
+          <p class="side-foot">真实游戏中，以上状态会随剧情永久写入本地存档——三个月后回来，江湖还记得。</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
 <!-- ================= 痛点 / 为什么 ================= -->
 <section id="why">
   <div class="wrap">
@@ -856,6 +958,140 @@
     }
     play();
   })();
+</script>
+<script>
+/* ---------- 交互试玩（预生成剧本回放） ---------- */
+(function(){
+  const body=document.getElementById('demoBody');
+  const root=document.getElementById('demoRoot');
+  const endPanel=document.getElementById('demoEnd');
+  const marksBox=document.getElementById('demoMarks');
+  const chips={};
+  document.querySelectorAll('.chip-row .v[data-k]').forEach(el=>chips[el.dataset.k]=el);
+  if(!body||!root) return;
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const auto=new URLSearchParams(location.search).get('demo')==='auto';
+
+  const SCENES={
+    s0:{chips:{身份:'镖师',银钱:'所剩无几',线索:'无',恩怨:'无',时辰:'戌时'},text:[
+      {t:'n',s:'洛阳，雨夜。城南老客栈的灯笼被风吹得晃了晃。'},
+      {t:'n',s:'你叫顾远舟，走镖七年。三天前，你押的最后一趟镖在潼关道上失踪——连同六个兄弟，一个都没回来。'},
+      {t:'n',s:'你推门进来，抖落一身雨水。堂中三五个江湖客在低声谈话；角落里，有个灰衣人从你进门起就一直没有低头。',p:500}
+    ],choices:[
+      {cn:'甲',tag:'听风',s:'要一壶热酒，坐到角落去听',to:'sA'},
+      {cn:'乙',tag:'按剑',s:'直接上楼开房，把剑压在枕下',to:'sB'},
+      {cn:'丙',tag:'探问',s:'走向那个灰衣人',to:'sC'}
+    ]},
+    sA:{chips:{线索:'废庙销赃',时辰:'亥时'},text:[
+      {t:'n',s:'酒是温的。掌柜把碗放下时，手在抖。'},
+      {t:'say',s:'「客官，」他的声音压得极低，「潼关道上丢的那趟镖……听说今夜有人在城西废庙销赃。」'},
+      {t:'n',s:'隔壁桌有人嗤笑：「鬼见愁的地界，也敢去？」你的手停在碗沿上——鬼见愁，正是你丢镖的地方。',p:500}
+    ],choices:[
+      {cn:'甲',tag:'穷问',s:'起身，追问销赃的细节',to:'s2'},
+      {cn:'乙',tag:'暗记',s:'不动声色，记下说话人的脸',to:'s2'}
+    ]},
+    sB:{chips:{线索:'废庙之约',时辰:'三更'},text:[
+      {t:'n',s:'楼板在脚下吱呀作响。你吹了灯，剑横在枕边，和衣而卧。'},
+      {t:'n',s:'三更前后，走廊里传来脚步声——很轻，在你门口停住了。'},
+      {t:'n',s:'没有敲门。一张折起的纸条从门缝下被推进来，脚步声随即远去。'},
+      {t:'you',s:'（展开纸条）'},
+      {t:'say',s:'「想知道镖去了哪里——三更，城西废庙。一个欠顾家命的人」',p:500}
+    ],choices:[
+      {cn:'甲',tag:'赴约',s:'如约赴庙',to:'s2'},
+      {cn:'乙',tag:'循迹',s:'吹灯拔闩，追上那脚步声',to:'s2'}
+    ]},
+    sC:{chips:{线索:'师门之谜',恩怨:'师门纠葛',时辰:'亥时'},text:[
+      {t:'n',s:'你在他对面坐下。灰衣人抬起头：一张陌生的脸，一双见过大风浪的眼睛。'},
+      {t:'say',s:'「孤鸿十三式，」他先开了口，「三年前名动河洛。顾清秋的记名弟子，怎么会沦落到走潼关的镖？」'},
+      {t:'n',s:'你浑身一僵——师父顾清秋，三个月前已经死在你面前。'},
+      {t:'say',s:'灰衣人盯着你，一字一顿：「他没死。想见他，三更，城西废庙。」',p:500}
+    ],choices:[
+      {cn:'甲',tag:'逼问',s:'攥住他的手腕，逼他说清楚',to:'s2'},
+      {cn:'乙',tag:'跟踪',s:'佯装不信，散场后暗中跟住他',to:'s2'}
+    ]},
+    s2:{chips:{线索:'废庙之约',时辰:'三更'},text:[
+      {t:'n',s:'无论哪条路，所有的线都指向同一个地方——城西废庙，三更。'},
+      {t:'n',s:'雨停了。你提灯出门，长街尽头的月亮泡在水洼里。破庙的轮廓伏在夜色深处，像一头睡着的兽。',p:500}
+    ],choices:[
+      {cn:'甲',tag:'赴约',s:'暗藏短刃，正门赴约',to:'s3'},
+      {cn:'乙',tag:'潜行',s:'绕到庙后，翻墙而入',to:'s3'},
+      {cn:'丙',tag:'伏击',s:'伏上庙外老槐树，静观其变',to:'s3'}
+    ]},
+    s3:{chips:{线索:'师父未死',恩怨:'+1',时辰:'三更'},end:true,text:[
+      {t:'n',s:'庙里有火光。有人背对着门，正往火堆里添柴。'},
+      {t:'n',s:'那人身形一动，你握紧了刀柄——可当他缓缓摘下斗笠、转过脸来时，你全身的血都凉了。'},
+      {t:'n',s:'那是顾清秋。你的师父。三个月前，在你面前咽气的人。'},
+      {t:'say',s:'「镖没有丢，」他说，「远舟——是我让你丢的。」'},
+      {t:'n',s:'火堆爆出一粒火星。庙外铜铃轻响，灰衣人已等在原来的位置。',p:600}
+    ]}
+  };
+
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  let skip=false;
+  async function typeInto(el,text){
+    if(reduce){el.textContent=text;return;}
+    for(const ch of text){
+      if(skip){el.textContent=text;skip=false;return;}
+      el.textContent+=ch;
+      await sleep(14+Math.random()*24);
+    }
+  }
+  function setChips(map){
+    for(const k in map){
+      const el=chips[k]; if(!el) continue;
+      el.textContent=map[k];
+      el.classList.remove('up'); void el.offsetWidth; el.classList.add('up');
+    }
+  }
+  function addMark(tag){
+    const empty=marksBox.querySelector('.mark-empty');
+    if(empty) empty.remove();
+    if([...marksBox.children].some(m=>m.textContent===tag)) return;
+    const m=document.createElement('span');m.className='mark';m.textContent=tag;
+    marksBox.appendChild(m);
+  }
+  function showChoices(list){
+    const box=document.createElement('div');box.className='demo-choices';
+    list.forEach((c,i)=>{
+      const b=document.createElement('button');
+      b.className='choice';b.style.animationDelay=(i*0.09)+'s';
+      b.innerHTML='<span class="cn">'+c.cn+'</span><span>'+c.s+'</span>';
+      b.addEventListener('click',()=>{addMark(c.tag);showScene(c.to);});
+      box.appendChild(b);
+    });
+    body.appendChild(box);
+    if(auto) setTimeout(()=>box.querySelector('.choice').click(),1100);
+  }
+  async function showScene(id){
+    const sc=SCENES[id];
+    skip=false; body.innerHTML='';
+    setChips(sc.chips);
+    for(const p of sc.text){
+      const el=document.createElement('p');
+      el.className='d-para'+(p.t==='you'?' d-you':p.t==='say'?' d-say':'');
+      body.appendChild(el);
+      await typeInto(el,p.s);
+      await sleep(p.p||(reduce?80:340));
+    }
+    if(sc.end){
+      await sleep(reduce?100:700);
+      endPanel.hidden=false;
+      return;
+    }
+    showChoices(sc.choices);
+  }
+  root.addEventListener('click',e=>{
+    if(e.target.closest('.choice')||e.target.closest('.copy-btn')||e.target.closest('.restart')) return;
+    if(document.querySelector('.demo-choices')) return;
+    skip=true;
+  });
+  document.getElementById('demoRestart').addEventListener('click',()=>{
+    endPanel.hidden=true;
+    marksBox.innerHTML='<span class="mark mark-empty">尚未落子</span>';
+    showScene('s0');
+  });
+  showScene('s0');
+})();
 </script>
 </body>
 </html>
