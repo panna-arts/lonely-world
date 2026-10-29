@@ -14,6 +14,15 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://yk5p80w5xvod.meoo.fun/og-card.png">
+<link rel="canonical" href="https://yk5p80w5xvod.meoo.fun">
+<link rel="alternate" hreflang="en" href="https://yk5p80w5xvod.meoo.fun/en.html">
+<link rel="alternate" hreflang="zh-CN" href="https://yk5p80w5xvod.meoo.fun">
+<meta name="theme-color" content="#0d0a07">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%23c2503a"/><text x="32" y="45" font-size="36" font-weight="900" text-anchor="middle" fill="%23fff4e4" font-family="serif">%E5%AD%A4</text></svg>'>
+<!-- Analytics slot：启用统计时取消注释其一并填入 id（详见 GTM/README.md §7）
+<script async defer data-website-id="YOUR_ID" src="https://umami.example.com/script.js"></script>
+<script async src="https://gc.example.com/count.js" data-goatcounter="https://YOUR.goatcounter.com/count"></script>
+-->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -28,7 +37,24 @@
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "license": "https://opensource.org/licenses/MIT",
   "url": "https://github.com/panna-arts/lonely-world",
-  "softwareVersion": "0.2.0"
+  "softwareVersion": "0.2.0",
+  "author": { "@type": "Organization", "name": "panna-arts" },
+  "keywords": "AI文字冒险, 互动小说, 文字游戏, LLM, 开源游戏, 本地优先, text adventure",
+  "inLanguage": "zh-CN"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "游戏本身收费吗？我需要花多少钱？", "acceptedAnswer": { "@type": "Answer", "text": "项目 MIT 协议开源，永久免费。你只需为自己使用的模型 API 付费（通常一次游玩几美分）；接入 Ollama / vLLM 本地模型则完全零成本。" } },
+    { "@type": "Question", "name": "我不会命令行，能玩吗？", "acceptedAnswer": { "@type": "Answer", "text": "可以。安装 Web 版（pip install \"lonely-world[web]\"）后运行 lonely-world-web，浏览器打开 localhost:7860，点选或创建角色即可开始，全程图形界面。" } },
+    { "@type": "Question", "name": "支持哪些模型？一定要用 OpenAI 吗？", "acceptedAnswer": { "@type": "Answer", "text": "不需要。任何 OpenAI 兼容接口都可以：OpenAI、Anthropic Claude、以及 Ollama / vLLM 跑的本地模型。用 --provider 参数或环境变量切换，随时换模型不换存档。" } },
+    { "@type": "Question", "name": "我的存档和数据安全吗？", "acceptedAnswer": { "@type": "Answer", "text": "所有数据保存在你电脑的 local/ 目录，不经过任何第三方服务器（仅与你配置的模型 API 通信）。API Key 优先存入系统密钥环；故事可随时导出为 Markdown，完全可携带。" } },
+    { "@type": "Question", "name": "玩久了 AI 会「失忆」吗？", "acceptedAnswer": { "@type": "Answer", "text": "这正是孤独世界的核心工程：Token-aware 动态上下文截断 + 自动记忆压缩归档。长剧情下关键设定与人物恩怨会被归档保留，而不是被直接截断丢弃。" } },
+    { "@type": "Question", "name": "AI 写出了我不想要的走向，怎么办？", "acceptedAnswer": { "@type": "Answer", "text": "输入 undo（或「撤回」）即可撤销上一轮输入并恢复到之前的状态，世界会当作什么都没发生过。你的故事，你有最终剪辑权。" } }
+  ]
 }
 </script>
 <style>
@@ -461,6 +487,7 @@
       <a href="#compare">对比</a>
       <a href="#start">快速上手</a>
       <a href="#faq">FAQ</a>
+      <a href="en.html" hreflang="en" style="font-family:var(--mono);font-size:12px">EN</a>
     </div>
     <a class="nav-gh" href="https://github.com/panna-arts/lonely-world" target="_blank" rel="noopener">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>

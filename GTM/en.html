@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lonely World — a Chinese AI text adventure with no scripted plot</title>
+<meta name="description" content="Lonely World (孤独世界) is an open-source, Chinese-native AI text adventure. No scripted plot: the world is co-created with you, character memory persists locally, and saves never leave your disk. Works with OpenAI, Claude, or a local Ollama model.">
+<meta property="og:title" content="Lonely World — a Chinese AI text adventure with no scripted plot">
+<meta property="og:description" content="You type; the world answers. Co-created worlds, persistent character memory, 100% local saves. Open source (MIT), bring your own LLM — OpenAI, Claude, or Ollama.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://yk5p80w5xvod.meoo.fun/en.html">
+<meta property="og:image" content="https://yk5p80w5xvod.meoo.fun/og-card-en.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://yk5p80w5xvod.meoo.fun/og-card-en.png">
+<link rel="canonical" href="https://yk5p80w5xvod.meoo.fun/en.html">
+<link rel="alternate" hreflang="en" href="https://yk5p80w5xvod.meoo.fun/en.html">
+<link rel="alternate" hreflang="zh-CN" href="https://yk5p80w5xvod.meoo.fun">
+<meta name="theme-color" content="#0d0a07">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%23c2503a"/><text x="32" y="45" font-size="36" font-weight="900" text-anchor="middle" fill="%23fff4e4" font-family="serif">%E5%AD%A4</text></svg>'>
+<!-- Analytics slot: uncomment one when enabling stats (see GTM/README.md §7)
+<script async defer data-website-id="YOUR_ID" src="https://umami.example.com/script.js"></script>
+<script async src="https://gc.example.com/count.js" data-goatcounter="https://YOUR.goatcounter.com/count"></script>
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Lonely World (孤独世界)",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Cross-platform",
+  "description": "An open-source, Chinese-native AI text adventure with no scripted plot: co-created worlds, persistent character memory, fully local saves. Works with OpenAI, Claude, or local Ollama models.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "license": "https://opensource.org/licenses/MIT",
+  "url": "https://github.com/panna-arts/lonely-world",
+  "softwareVersion": "0.2.0",
+  "author": { "@type": "Organization", "name": "panna-arts" },
+  "keywords": "AI text adventure, interactive fiction, LLM game, open source, local-first, wuxia",
+  "inLanguage": "zh-CN"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "What does it cost?", "acceptedAnswer": { "@type": "Answer", "text": "The game is MIT-licensed and free. You pay only for the model API you point it at (pennies per session); with a local Ollama/vLLM model it costs nothing." } },
+    { "@type": "Question", "name": "Do I need to use a terminal?", "acceptedAnswer": { "@type": "Answer", "text": "No. Install the web extra (pip install \"lonely-world[web]\") and run lonely-world-web, then open localhost:7860 — create or pick a character entirely in the browser." } },
+    { "@type": "Question", "name": "Which models does it support?", "acceptedAnswer": { "@type": "Answer", "text": "Any OpenAI-compatible API: OpenAI, Anthropic Claude, and local models via Ollama or vLLM. Switch with --provider or environment variables — models change, saves don't." } },
+    { "@type": "Question", "name": "Where does my data live?", "acceptedAnswer": { "@type": "Answer", "text": "Entirely in the local/ directory on your machine; nothing touches a third-party server except the model API you configure. API keys go to the system keychain, and stories export to Markdown." } },
+    { "@type": "Question", "name": "Will it forget things in long campaigns?", "acceptedAnswer": { "@type": "Answer", "text": "That is the core engineering: token-aware context trimming plus automatic memory compression. Key facts and grudges get archived, not truncated away." } },
+    { "@type": "Question", "name": "The AI took the story somewhere I hate. Now what?", "acceptedAnswer": { "@type": "Answer", "text": "Type undo. The last turn is rolled back and the world behaves as if it never happened. You hold final cut on your story." } }
+  ]
+}
+</script>
+<style>
+  :root{
+    --bg:        #0d0a07;
+    --bg-2:      #14100a;
+    --card:      #17120b;
+    --card-hi:   #1d160d;
+    --paper:     #efe5d0;
+    --muted:     #a4937a;
+    --faint:     #6e6150;
+    --line:      rgba(239,229,208,.10);
+    --line-soft: rgba(239,229,208,.06);
+    --amber:     #e8a34c;
+    --amber-hi:  #ffc272;
+    --ember:     #c2503a;
+    --jade:      #93b08c;
+    --serif: "Noto Serif SC",Georgia,"Songti SC",serif;
+    --mono: "JetBrains Mono","SF Mono",ui-monospace,Menlo,monospace;
+    --maxw: 1140px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;overflow-x:hidden}
+  body{
+    background:var(--bg);
+    color:var(--paper);
+    font-family:var(--serif);
+    font-size:16px;
+    line-height:1.8;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::after{
+    content:"";position:fixed;inset:0;z-index:2000;pointer-events:none;opacity:.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  ::selection{background:rgba(232,163,76,.35);color:#fff8ec}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+  section{padding:110px 0;position:relative;scroll-margin-top:76px}
+
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:1000;
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    background:rgba(13,10,7,.78);border-bottom:1px solid var(--line-soft);
+  }
+  .nav-inner{max-width:var(--maxw);margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;gap:28px}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:17px;letter-spacing:.04em}
+  .seal{
+    width:34px;height:34px;flex:none;display:grid;place-items:center;
+    background:var(--ember);color:#fff4e4;font-weight:900;font-size:19px;
+    border-radius:5px;transform:rotate(-4deg);
+    box-shadow:0 2px 14px rgba(194,80,58,.4);
+  }
+  .brand small{font-family:var(--mono);font-weight:400;font-size:11px;color:var(--faint);letter-spacing:.02em;display:block;line-height:1.2}
+  .nav-links{display:flex;gap:26px;margin-left:auto}
+  .nav-links a{font-size:13.5px;color:var(--muted);letter-spacing:.06em;transition:color .2s}
+  .nav-links a:hover{color:var(--amber-hi)}
+  .nav-gh{
+    display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;
+    border:1px solid var(--line);border-radius:99px;padding:7px 16px;color:var(--paper);
+    transition:border-color .2s,color .2s,box-shadow .2s;
+  }
+  .nav-gh:hover{border-color:var(--amber);color:var(--amber-hi);box-shadow:0 0 20px rgba(232,163,76,.15)}
+  @media(max-width:900px){.nav-links{display:none}}
+
+  .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:150px 0 90px;overflow:hidden}
+  .hero::before{
+    content:"";position:absolute;top:-12%;right:-6%;width:62vw;height:62vw;max-width:880px;max-height:880px;
+    background:radial-gradient(circle,rgba(232,163,76,.13) 0%,rgba(232,163,76,.05) 38%,transparent 66%);
+    animation:lamp 9s ease-in-out infinite alternate;pointer-events:none;
+  }
+  @keyframes lamp{from{transform:translate(0,0) scale(1)}to{transform:translate(-3%,4%) scale(1.07)}}
+  .hero-grid{display:grid;grid-template-columns:1.04fr .96fr;gap:56px;align-items:center;position:relative;z-index:2}
+  .eyebrow{
+    font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:var(--amber);
+    display:inline-flex;align-items:center;gap:10px;margin-bottom:26px;
+  }
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--amber)}
+  h1{
+    font-size:clamp(2.4rem,5.2vw,4.1rem);font-weight:900;line-height:1.24;letter-spacing:.01em;
+    margin-bottom:26px;
+  }
+  h1 em{font-style:normal;color:var(--amber-hi);position:relative;white-space:nowrap}
+  h1 em::after{
+    content:"";position:absolute;left:0;right:0;bottom:.08em;height:.42em;z-index:-1;
+    background:linear-gradient(90deg,rgba(232,163,76,.22),rgba(194,80,58,.16));
+    transform:skewX(-8deg);
+  }
+  .hero-sub{color:var(--muted);font-size:17px;max-width:36em;margin-bottom:38px}
+  .hero-sub strong{color:var(--paper);font-weight:600}
+  .cta-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:34px}
+  .btn{
+    display:inline-flex;align-items:center;gap:10px;border-radius:8px;cursor:pointer;
+    font-family:var(--serif);font-size:15.5px;font-weight:700;letter-spacing:.03em;
+    padding:14px 28px;transition:transform .2s,box-shadow .25s,border-color .2s,background .2s;
+  }
+  .btn-pri{
+    background:linear-gradient(135deg,var(--amber) 0%,#d8853a 100%);color:#241505;
+    box-shadow:0 4px 24px rgba(232,163,76,.28);
+  }
+  .btn-pri:hover{transform:translateY(-2px);box-shadow:0 8px 34px rgba(232,163,76,.42)}
+  .btn-gho{border:1px solid var(--line);color:var(--paper)}
+  .btn-gho:hover{border-color:var(--amber);color:var(--amber-hi)}
+  .install-pill{
+    display:inline-flex;align-items:center;gap:14px;max-width:100%;
+    font-family:var(--mono);font-size:13.5px;color:var(--paper);
+    background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:11px 8px 11px 18px;
+  }
+  .install-pill .dollar{color:var(--amber)}
+  .copy-btn{
+    font-family:var(--mono);font-size:11.5px;color:var(--muted);background:transparent;
+    border:1px solid var(--line);border-radius:6px;padding:5px 12px;cursor:pointer;letter-spacing:.06em;
+    transition:all .2s;flex:none;
+  }
+  .copy-btn:hover{color:var(--amber-hi);border-color:var(--amber)}
+  .copy-btn.done{color:var(--jade);border-color:var(--jade)}
+  .hero-meta{
+    display:flex;flex-wrap:wrap;gap:8px 0;font-family:var(--mono);font-size:11.5px;
+    color:var(--faint);letter-spacing:.1em;
+  }
+  .hero-meta span{display:flex;align-items:center}
+  .hero-meta span:not(:last-child)::after{content:"·";margin:0 14px;color:rgba(232,163,76,.45)}
+
+  .vtext{
+    position:absolute;writing-mode:vertical-rl;letter-spacing:.5em;
+    font-size:13px;color:rgba(164,147,122,.42);user-select:none;pointer-events:none;z-index:1;
+  }
+  .vtext b{color:rgba(232,163,76,.55);font-weight:400}
+  .vt-1{right:36px;top:150px}
+  .vt-2{right:76px;top:150px;opacity:.55}
+
+  .term{
+    background:#0a0805;border:1px solid rgba(232,163,76,.16);border-radius:14px;
+    box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 60px rgba(232,163,76,.06),inset 0 1px 0 rgba(255,255,255,.04);
+    overflow:hidden;font-family:var(--mono);font-size:13px;line-height:1.9;position:relative;z-index:2;
+  }
+  .term-bar{
+    display:flex;align-items:center;gap:8px;padding:12px 16px;
+    background:rgba(232,163,76,.05);border-bottom:1px solid var(--line-soft);
+  }
+  .term-bar i{width:11px;height:11px;border-radius:50%;background:#3a3227}
+  .term-bar i:first-child{background:var(--ember)}
+  .term-bar i:nth-child(2){background:var(--amber)}
+  .term-bar i:nth-child(3){background:var(--jade)}
+  .term-bar span{margin-left:auto;font-size:11px;color:var(--faint);letter-spacing:.12em}
+  .term-body{padding:20px 22px 26px;min-height:400px;color:#cfc2a8;white-space:pre-wrap;word-break:break-all}
+  .term-body .t-cmd{color:var(--paper)}
+  .term-body .t-cmd::before{content:"$ ";color:var(--amber)}
+  .term-body .t-sys{color:#8a7c64}
+  .term-body .t-you{color:#e8d9b8}
+  .term-body .t-you::before{content:"你：";color:var(--amber-hi);font-weight:700}
+  .term-body .t-npc{color:#b7a789}
+  .term-body .t-npc::before{content:"李逍遥：";color:var(--jade);font-weight:700}
+  .term-body .t-new{display:block;margin-top:1em}
+  .caret{display:inline-block;width:8px;height:1.15em;background:var(--amber);vertical-align:text-bottom;animation:blink 1s steps(1) infinite;margin-left:2px}
+  @keyframes blink{50%{opacity:0}}
+  .term-fade{animation:tfade .5s ease both}
+  @keyframes tfade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+  .mountains{position:absolute;bottom:-2px;left:0;right:0;z-index:0;pointer-events:none;opacity:.75}
+
+  .sec-head{max-width:680px;margin-bottom:64px}
+  .sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
+  .sec-head.center .eyebrow{justify-content:center}
+  .sec-head.center .eyebrow::before{display:none}
+  h2{font-size:clamp(1.7rem,3.4vw,2.5rem);font-weight:900;line-height:1.4;letter-spacing:.01em;margin-bottom:16px}
+  h2 em{font-style:normal;color:var(--amber-hi)}
+  .lead{color:var(--muted);font-size:16.5px}
+
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.7,.3,1);transition-delay:var(--d,0s)}
+  .reveal.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .hero::before{animation:none}
+    html{scroll-behavior:auto}
+  }
+
+  /* ============ DEMO ============ */
+  .demo-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start}
+  .demo-win{background:#0a0805;border:1px solid rgba(232,163,76,.16);border-radius:14px;
+    box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.04);overflow:hidden}
+  .demo-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(232,163,76,.05);border-bottom:1px solid var(--line-soft)}
+  .demo-bar i{width:11px;height:11px;border-radius:50%;background:#3a3227}
+  .demo-bar i:first-child{background:var(--ember)}
+  .demo-bar i:nth-child(2){background:var(--amber)}
+  .demo-bar i:nth-child(3){background:var(--jade)}
+  .demo-bar span{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.12em}
+  .demo-body{padding:26px 28px 30px;font-family:var(--mono);font-size:13.5px;line-height:2.05;min-height:420px}
+  .d-para{margin:0;color:#b7a789}
+  .d-para.d-you{color:#e8d9b8}
+  .d-para.d-you::before{content:"你：";color:var(--amber-hi);font-weight:700}
+  .d-para.d-say{color:#d8c9a8}
+  .d-en{display:block;font-family:var(--serif);font-size:12.5px;font-style:normal;color:var(--muted);line-height:1.8;margin:2px 0 1.2em;animation:chIn .5s ease both}
+  .d-para-wrap{margin-bottom:.2em}
+  .demo-choices{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+  .choice{
+    display:flex;align-items:center;gap:12px;text-align:left;
+    background:rgba(232,163,76,.05);border:1px solid rgba(232,163,76,.22);border-radius:10px;
+    padding:12px 16px;color:#e8d9b8;font-family:var(--mono);font-size:13px;line-height:1.7;
+    cursor:pointer;opacity:0;transform:translateY(8px);animation:chIn .45s ease forwards;
+    transition:border-color .2s,background .2s,transform .2s;
+  }
+  .choice:hover,.choice:focus-visible{border-color:var(--amber);background:rgba(232,163,76,.12);transform:translateY(-1px);outline:none}
+  .choice .cn{color:var(--amber);font-weight:700;flex:none}
+  .choice>span:last-child{flex:1}
+  .choice .cnx{display:block;font-size:11px;color:var(--faint);letter-spacing:.05em;margin-top:2px}
+  @keyframes chIn{to{opacity:1;transform:none}}
+  .demo-end{border-top:1px solid var(--line);margin:6px 28px 30px;padding-top:24px;font-family:var(--serif);animation:endIn .6s ease both}
+  @keyframes endIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .demo-end p{font-size:14.5px;color:var(--muted);line-height:2;margin-bottom:18px}
+  .demo-end p b{color:var(--paper)}
+  .demo-end .cta-row{margin-bottom:16px}
+  .demo-end .install-pill{font-size:12.5px}
+  .restart{
+    font-family:var(--mono);font-size:11.5px;color:var(--faint);letter-spacing:.1em;cursor:pointer;
+    background:none;border:none;border-bottom:1px dashed var(--faint);padding:2px 0;transition:color .2s;
+  }
+  .restart:hover{color:var(--amber-hi)}
+  .demo-side{position:sticky;top:88px}
+  .side-card{background:linear-gradient(180deg,var(--card) 0%,var(--bg-2) 100%);border:1px solid var(--line-soft);border-radius:14px;padding:24px 22px}
+  .side-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+  .side-title{font-weight:700;font-size:16px}
+  .side-note{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.08em}
+  .chip-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line-soft);font-size:12.5px}
+  .chip-row .k{color:var(--faint);letter-spacing:.14em;font-family:var(--mono);font-size:11px}
+  .chip-row .v{color:var(--amber-hi);padding:1px 8px;border-radius:6px}
+  .chip-row .v.up{animation:vflash 1s ease}
+  @keyframes vflash{0%{background:rgba(232,163,76,.3)}100%{background:transparent}}
+  .side-sub{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.2em;margin:16px 0 12px;padding-top:14px;border-top:1px solid var(--line-soft)}
+  .marks{display:flex;flex-wrap:wrap;gap:8px;min-height:26px}
+  .mark{border:1px solid rgba(232,163,76,.35);border-radius:99px;padding:3px 12px;font-family:var(--mono);font-size:10.5px;color:var(--amber-hi);letter-spacing:.08em;animation:chIn .45s both}
+  .mark-empty{border-style:dashed;color:var(--faint)}
+  .side-foot{margin-top:16px;font-size:12px;color:var(--faint);line-height:1.9}
+  @media(max-width:880px){
+    .demo-grid{grid-template-columns:1fr}
+    .demo-side{position:static}
+    .demo-body{min-height:340px;padding:22px 20px 26px}
+    .demo-end{margin:6px 20px 26px}
+  }
+
+  /* ============ PAINS ============ */
+  .pains{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:20px}
+  .pain{
+    background:linear-gradient(180deg,var(--card) 0%,var(--bg-2) 100%);
+    border:1px solid var(--line-soft);border-radius:14px;padding:34px 30px;position:relative;overflow:hidden;
+    transition:transform .3s,border-color .3s;
+  }
+  .pain:hover{transform:translateY(-4px);border-color:var(--line)}
+  .pain .no{font-family:var(--mono);font-size:12px;color:var(--faint);letter-spacing:.2em;display:block;margin-bottom:20px}
+  .pain h3{font-size:19px;font-weight:700;margin-bottom:12px;color:#ded1b6}
+  .pain p{font-size:14.5px;color:var(--muted)}
+  .pain p b{color:var(--ember);font-weight:600}
+  .answer{
+    margin-top:44px;text-align:center;padding:38px 30px;position:relative;
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  }
+  .answer::before,.answer::after{
+    content:"";position:absolute;top:-4px;width:7px;height:7px;border-radius:50%;background:var(--amber);
+  }
+  .answer::before{left:0}.answer::after{right:0}
+  .answer p{font-size:clamp(1.05rem,2vw,1.35rem);font-weight:600;line-height:2}
+  .answer p em{font-style:normal;color:var(--amber-hi)}
+
+  /* ============ AUDIENCES ============ */
+  .audiences{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .aud{
+    border:1px solid var(--line-soft);border-radius:14px;padding:32px 26px;background:var(--bg-2);
+    display:flex;flex-direction:column;gap:16px;transition:transform .3s,border-color .3s,background .3s;position:relative;overflow:hidden;
+  }
+  .aud::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--amber),transparent);opacity:0;transition:opacity .3s}
+  .aud:hover{transform:translateY(-5px);border-color:rgba(232,163,76,.35);background:var(--card-hi)}
+  .aud:hover::before{opacity:1}
+  .aud .icon{font-size:26px;line-height:1}
+  .aud h3{font-size:17.5px;font-weight:700}
+  .aud blockquote{font-size:14px;color:var(--muted);line-height:1.9;flex:1}
+  .aud blockquote em{font-style:normal;color:var(--amber-hi)}
+  .aud .tag{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.18em}
+
+  /* ============ FEATURES ============ */
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .feat{
+    background:linear-gradient(180deg,var(--card) 0%,var(--bg-2) 100%);
+    border:1px solid var(--line-soft);border-radius:14px;padding:34px 30px;
+    transition:transform .3s,border-color .3s,box-shadow .3s;
+  }
+  .feat:hover{transform:translateY(-4px);border-color:rgba(232,163,76,.3);box-shadow:0 16px 44px rgba(0,0,0,.4)}
+  .feat .glyph{
+    font-family:var(--mono);font-size:12px;color:var(--amber);letter-spacing:.15em;
+    border:1px solid rgba(232,163,76,.3);border-radius:6px;display:inline-block;padding:4px 10px;margin-bottom:22px;
+  }
+  .feat h3{font-size:19px;font-weight:700;margin-bottom:10px}
+  .feat p{font-size:14.5px;color:var(--muted)}
+
+  /* ============ COMPARE ============ */
+  .tbl-scroll{overflow-x:auto;border:1px solid var(--line-soft);border-radius:16px;background:var(--bg-2)}
+  table{width:100%;border-collapse:collapse;min-width:760px}
+  th,td{padding:20px 24px;text-align:left;font-size:14.5px;vertical-align:top;border-bottom:1px solid var(--line-soft)}
+  tr:last-child td{border-bottom:none}
+  thead th{font-size:13px;letter-spacing:.08em;color:var(--muted);font-weight:600;background:rgba(239,229,208,.02)}
+  td.dim{color:var(--faint);font-weight:600;white-space:nowrap;font-size:13.5px}
+  .col-us{background:rgba(232,163,76,.06);border-left:1px solid rgba(232,163,76,.22);border-right:1px solid rgba(232,163,76,.22)}
+  thead th.col-us{color:var(--amber-hi);position:relative}
+  thead th.col-us::after{content:"";position:absolute;top:-1px;left:0;right:0;height:2px;background:var(--amber)}
+  td.col-us{color:#ead9ba;font-weight:600}
+  td .ok{color:var(--jade);margin-right:8px;font-family:var(--mono)}
+  td .no{color:#7a6a55;margin-right:8px;font-family:var(--mono)}
+
+  /* ============ STEPS ============ */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .step{
+    background:var(--bg-2);border:1px solid var(--line-soft);border-radius:14px;padding:34px 30px;position:relative;
+    transition:transform .3s,border-color .3s;
+  }
+  .step:hover{transform:translateY(-4px);border-color:rgba(232,163,76,.3)}
+  .step .num{
+    font-family:var(--mono);font-size:44px;font-weight:700;color:transparent;
+    -webkit-text-stroke:1px rgba(232,163,76,.5);line-height:1;display:block;margin-bottom:22px;
+  }
+  .step h3{font-size:18px;font-weight:700;margin-bottom:8px}
+  .step p{font-size:14px;color:var(--muted);margin-bottom:20px}
+  .cmd{
+    display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:12.5px;
+    background:#0a0805;border:1px solid var(--line);border-radius:8px;padding:10px 8px 10px 14px;color:#d8caab;
+  }
+  .cmd .dollar{color:var(--amber);flex:none}
+  .cmd code{flex:1;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+  .cmd code::-webkit-scrollbar{display:none}
+  .web-note{
+    margin-top:26px;display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;
+    border:1px dashed rgba(232,163,76,.3);border-radius:14px;padding:24px 28px;
+    background:rgba(232,163,76,.04);
+  }
+  .web-note .lbl{
+    font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--amber);flex:none;
+    border:1px solid rgba(232,163,76,.35);border-radius:99px;padding:5px 14px;margin-top:3px;
+  }
+  .web-note p{font-size:14.5px;color:var(--muted);flex:1;min-width:260px}
+  .web-note code{font-family:var(--mono);font-size:13px;color:var(--amber-hi)}
+  .web-note a{border-bottom:1px dashed var(--amber);color:var(--paper)}
+  .web-note a:hover{color:var(--amber-hi)}
+
+  /* ============ TRUST ============ */
+  .trust{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .tcard{border:1px solid var(--line-soft);border-radius:14px;padding:30px 26px;background:var(--bg-2);transition:border-color .3s,transform .3s}
+  .tcard:hover{border-color:rgba(147,176,140,.4);transform:translateY(-3px)}
+  .tcard .icon{font-size:22px;margin-bottom:16px;display:block}
+  .tcard h3{font-size:16.5px;font-weight:700;margin-bottom:8px;color:#ded1b6}
+  .tcard p{font-size:13.5px;color:var(--muted)}
+  .tcard code{font-family:var(--mono);font-size:12px;color:var(--amber-hi)}
+
+  /* ============ FAQ ============ */
+  .faq{max-width:760px;margin:0 auto}
+  details{border-bottom:1px solid var(--line-soft)}
+  details:first-child{border-top:1px solid var(--line-soft)}
+  summary{
+    list-style:none;cursor:pointer;padding:26px 8px;display:flex;align-items:center;gap:18px;
+    font-size:17px;font-weight:600;transition:color .2s;
+  }
+  summary::-webkit-details-marker{display:none}
+  summary:hover{color:var(--amber-hi)}
+  summary .q{font-family:var(--mono);color:var(--amber);font-size:13px;flex:none}
+  summary .arr{margin-left:auto;font-family:var(--mono);color:var(--faint);transition:transform .3s;flex:none}
+  details[open] .arr{transform:rotate(45deg);color:var(--amber)}
+  details .a{padding:0 8px 28px 43px;color:var(--muted);font-size:15px;max-width:60em}
+  details .a code{font-family:var(--mono);font-size:13px;color:var(--amber-hi);background:rgba(232,163,76,.08);padding:2px 7px;border-radius:5px}
+
+  /* ============ FINAL ============ */
+  .final{text-align:center;padding:160px 0 150px;overflow:hidden}
+  .final .giant{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);z-index:0;pointer-events:none;
+    font-size:clamp(300px,42vw,560px);font-weight:900;line-height:1;
+    color:transparent;-webkit-text-stroke:1px rgba(232,163,76,.14);user-select:none;
+  }
+  .final h2{font-size:clamp(2rem,4.6vw,3.3rem);position:relative;z-index:1}
+  .final h2 em{font-style:normal;color:var(--amber-hi)}
+  .final .lead{position:relative;z-index:1;margin-bottom:44px}
+  .final .cta-row{justify-content:center;position:relative;z-index:1;margin-bottom:30px}
+  .final .install-pill{position:relative;z-index:1}
+  .final .whisper{
+    position:relative;z-index:1;margin-top:56px;font-size:13.5px;color:var(--faint);letter-spacing:.3em;
+  }
+
+  footer{border-top:1px solid var(--line-soft);padding:44px 0 54px;position:relative;z-index:1}
+  .foot-grid{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start;justify-content:space-between}
+  .foot-brand{display:flex;align-items:center;gap:12px;font-weight:700}
+  .foot-links{display:flex;flex-wrap:wrap;gap:10px 26px;font-family:var(--mono);font-size:12px;letter-spacing:.06em}
+  .foot-links a{color:var(--muted);transition:color .2s}
+  .foot-links a:hover{color:var(--amber-hi)}
+  .foot-fine{margin-top:26px;font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.12em;line-height:2.2}
+
+  @media(max-width:1020px){
+    .audiences{grid-template-columns:repeat(2,1fr)}
+    .trust{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:880px){
+    .hero-grid{grid-template-columns:1fr;gap:44px}
+    .hero{padding-top:130px}
+    .vtext{display:none}
+    .pains,.features,.steps{grid-template-columns:1fr}
+    section{padding:84px 0}
+  }
+  @media(max-width:560px){
+    .audiences,.trust{grid-template-columns:1fr}
+    .wrap{padding:0 20px}
+    .nav-inner{padding:0 20px}
+    h1 em{white-space:normal}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="brand" href="#top">
+      <span class="seal">孤</span>
+      <span>Lonely World<small>孤独世界</small></span>
+    </a>
+    <div class="nav-links">
+      <a href="#demo">Try it</a>
+      <a href="#why">Why</a>
+      <a href="#who">Who it's for</a>
+      <a href="#features">Features</a>
+      <a href="#compare">Compare</a>
+      <a href="#start">Quick start</a>
+      <a href="#faq">FAQ</a>
+      <a href="index.html" hreflang="zh-CN" style="font-family:var(--mono);font-size:12px">中文</a>
+    </div>
+    <a class="nav-gh" href="https://github.com/panna-arts/lonely-world" target="_blank" rel="noopener">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <span class="vtext vt-1">万 卷 山 河 · 尽 在 你 笔</span>
+  <span class="vtext vt-2">推 门 · 世 界 才 开 始</span>
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">V0.2.0 · MIT OPEN SOURCE · CHINESE-NATIVE</span>
+      <h1>A Chinese AI text adventure<br><em>with no scripted plot</em></h1>
+      <p class="hero-sub">
+        You type what you do; an LLM narrates the consequences. Your character's <strong>items, skills, personality and grudges</strong> persist on your own disk —
+        come back three months later and the jianghu still remembers you. <strong>Every playthrough is a story only you can tell.</strong>
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-pri" href="#start">Start in three minutes</a>
+        <a class="btn btn-gho" href="https://github.com/panna-arts/lonely-world" target="_blank" rel="noopener">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          Read the source
+        </a>
+      </div>
+      <div class="install-pill">
+        <span><span class="dollar">$</span> pip install lonely-world</span>
+        <button class="copy-btn" data-copy="pip install lonely-world">Copy</button>
+      </div>
+      <div class="hero-meta" style="margin-top:30px">
+        <span>MIT LICENSE</span>
+        <span>PYTHON 3.10+</span>
+        <span>CLI + WEB</span>
+        <span>OPENAI / CLAUDE / OLLAMA</span>
+        <span>100% LOCAL SAVES</span>
+      </div>
+    </div>
+    <div class="term" aria-hidden="true">
+      <div class="term-bar"><i></i><i></i><i></i><span>lonely-world — zsh</span></div>
+      <div class="term-body" id="termBody"></div>
+    </div>
+  </div>
+  <svg class="mountains" viewBox="0 0 1440 180" preserveAspectRatio="none" height="180" width="100%">
+    <path d="M0 180 L0 120 Q 120 70 240 105 Q 330 128 430 92 Q 560 48 700 96 Q 800 128 900 100 Q 1030 64 1160 104 Q 1290 142 1440 96 L1440 180 Z" fill="#120e09"/>
+    <path d="M0 180 L0 148 Q 160 112 320 138 Q 480 162 640 132 Q 820 100 1000 140 Q 1200 178 1440 128 L1440 180 Z" fill="#171209"/>
+  </svg>
+</header>
+
+<main>
+<!-- ================= TRY IT ================= -->
+<section id="demo">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">DEMO · NO INSTALL</span>
+      <h2>Push the door open <em>first</em></h2>
+      <p class="lead">A pre-scripted interactive excerpt that follows real gameplay — every choice gets an answer, every state gets remembered. The prose below is the authentic in-game Chinese, with an English shadow underneath. Install the game, and the script disappears.</p>
+    </div>
+    <div class="demo-grid reveal">
+      <div class="demo-win" id="demoRoot" aria-label="Interactive demo">
+        <div class="demo-bar"><i></i><i></i><i></i><span>Lonely World — interactive demo</span></div>
+        <div class="demo-body" id="demoBody"></div>
+        <div class="demo-end" id="demoEnd" hidden>
+          <p>In the real Lonely World, <b>this is where it begins</b>: choices settle into your character's record, and months from now the jianghu still remembers tonight. Regret nothing — <b>undo</b> takes back any line, and the save file stays on your own disk forever.</p>
+          <div class="cta-row">
+            <span class="install-pill"><span><span class="dollar">$</span> pip install lonely-world</span><button class="copy-btn" data-copy="pip install lonely-world">Copy</button></span>
+          </div>
+          <button class="restart" id="demoRestart">↺ Replay — make different choices</button>
+        </div>
+      </div>
+      <aside class="demo-side">
+        <div class="side-card">
+          <div class="side-head"><span class="side-title">Character sheet 角色档案</span><span class="side-note">demo · real saves stay local</span></div>
+          <div class="chip-row"><span class="k">身份 IDENTITY</span><span class="v" data-k="身份">—</span></div>
+          <div class="chip-row"><span class="k">银钱 COIN</span><span class="v" data-k="银钱">—</span></div>
+          <div class="chip-row"><span class="k">线索 CLUES</span><span class="v" data-k="线索">—</span></div>
+          <div class="chip-row"><span class="k">恩怨 GRUDGES</span><span class="v" data-k="恩怨">—</span></div>
+          <div class="chip-row"><span class="k">时辰 HOUR</span><span class="v" data-k="时辰">—</span></div>
+          <div class="side-sub">STORY MARKS 剧情印记</div>
+          <div class="marks" id="demoMarks"><span class="mark mark-empty">no moves yet</span></div>
+          <p class="side-foot">In the real game, this state is permanently written to your local save as the story unfolds — the jianghu remembers.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ================= WHY ================= -->
+<section id="why">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">01 · WHY LONELY WORLD</span>
+      <h2>You've read a hundred endings.<br><em>None of them were yours.</em></h2>
+      <p class="lead">Before AI, we visited other people's stories. Now stories can finally be yours — but most AI games lose three things along the way.</p>
+    </div>
+    <div class="pains">
+      <div class="pain reveal" style="--d:.05s">
+        <span class="no">PAIN — 01</span>
+        <h3>Classic text adventures: the plot is baked in</h3>
+        <p>Any branch tree is finite. On your second playthrough you're not exploring anymore — you're <b>executing a walkthrough</b>.</p>
+      </div>
+      <div class="pain reveal" style="--d:.15s">
+        <span class="no">PAIN — 02</span>
+        <h3>Chatbot role-play: forgotten by morning</h3>
+        <p>Endlessly obliging, endlessly blank. Close the window and nothing remains: <b>no saves, no world, no continuity</b>. Last session's grudge? It never happened.</p>
+      </div>
+      <div class="pain reveal" style="--d:.25s">
+        <span class="no">PAIN — 03</span>
+        <h3>Cloud AI games: the story isn't yours</h3>
+        <p>Your character lives on someone else's server — subject to <b>price hikes and shutdowns</b>, with a translation layer between you and every line.</p>
+      </div>
+    </div>
+    <div class="answer reveal">
+      <p>Lonely World puts an infinite-plot AI inside <em>an engine that remembers</em> —<br>the world is co-created with you, memory stays with you, and the story lives on your own disk.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= WHO ================= -->
+<section id="who" style="background:var(--bg-2);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">02 · WHO IT'S FOR</span>
+      <h2>Four kinds of people <em>stay</em></h2>
+    </div>
+    <div class="audiences">
+      <div class="aud reveal" style="--d:.05s">
+        <span class="icon">🗡️</span>
+        <span class="tag">PLAYERS</span>
+        <h3>Interactive-fiction readers</h3>
+        <blockquote>「A game <em>no walkthrough can spoil</em>.」— Every run builds a different world, and your choices genuinely move the story.</blockquote>
+      </div>
+      <div class="aud reveal" style="--d:.15s">
+        <span class="icon">🎲</span>
+        <span class="tag">TTRPG</span>
+        <h3>Solo players &amp; GMs</h3>
+        <blockquote>A GM who <em>never tires, never breaks the setting, and keeps every foreshadowed thread</em>. One player, one full campaign, any hour.</blockquote>
+      </div>
+      <div class="aud reveal" style="--d:.25s">
+        <span class="icon">⚙️</span>
+        <span class="tag">GEEKS</span>
+        <h3>AI &amp; open-source folks</h3>
+        <blockquote>A clean provider abstraction — <em>plug in your own model</em>. MIT licensed; the source is the manual. Fork the rules if you like.</blockquote>
+      </div>
+      <div class="aud reveal" style="--d:.35s">
+        <span class="icon">✒️</span>
+        <span class="tag">WRITERS</span>
+        <h3>Writers &amp; story people</h3>
+        <blockquote>Five questions raise a world; every turn is raw material. <em>Export story.md and you've closed the laptop on a draft.</em></blockquote>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">03 · CORE VALUE</span>
+      <h2>An engine that remembers is <em>what makes infinite plot worth it</em></h2>
+      <p class="lead">Every feature answers one question: how do you make an AI-generated story worth investing three months in?</p>
+    </div>
+    <div class="features">
+      <div class="feat reveal" style="--d:.05s">
+        <span class="glyph">NO-SCRIPT</span>
+        <h3>Unscripted plot</h3>
+        <p>No quest log, no critical path. The story happens because you opened the door — the AI improvises from whatever you do, however absurd.</p>
+      </div>
+      <div class="feat reveal" style="--d:.12s">
+        <span class="glyph">CO-CREATE</span>
+        <h3>Co-created worlds</h3>
+        <p>Five questions at the start: era, place, people, society. The stage is built from your imagination, not rolled from a random table.</p>
+      </div>
+      <div class="feat reveal" style="--d:.19s">
+        <span class="glyph">MEMORY</span>
+        <h3>Persistent memory</h3>
+        <p>Items, skills, personality, grudges — all persisted to disk. Token-aware context plus automatic memory compression: long campaigns don't "forget".</p>
+      </div>
+      <div class="feat reveal" style="--d:.26s">
+        <span class="glyph">STORY.MD</span>
+        <h3>Literary ghostwriter</h3>
+        <p>Opt in, and every turn is also rewritten as literary prose into story.md. You play the game; a novel writes itself alongside.</p>
+      </div>
+      <div class="feat reveal" style="--d:.33s">
+        <span class="glyph">BYO-MODEL</span>
+        <h3>Any model</h3>
+        <p>OpenAI, Anthropic Claude, Ollama / vLLM — anything OpenAI-compatible. One flag to switch providers. No lock-in, ever.</p>
+      </div>
+      <div class="feat reveal" style="--d:.40s">
+        <span class="glyph">CLI + WEB</span>
+        <h3>Two ways in</h3>
+        <p>The terminal for ritual, the browser for comfort — a multi-user Web UI with streaming replies, Markdown rendering, and independent per-user saves.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= COMPARE ================= -->
+<section id="compare" style="background:var(--bg-2);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">04 · HOW IT DIFFERS</span>
+      <h2>Same word — "story". <em>The difference is who holds it.</em></h2>
+    </div>
+    <div class="tbl-scroll reveal">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:16%">Dimension</th>
+            <th class="col-us">Lonely World</th>
+            <th>Classic text adventures</th>
+            <th>Chatbot role-play</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="dim">Plot</td>
+            <td class="col-us"><span class="ok">✓</span>Unique every run</td>
+            <td><span class="no">✕</span>Finite branch tree; run two is a walkthrough</td>
+            <td><span class="no">✕</span>Infinite replies, no rules, breaks character</td>
+          </tr>
+          <tr>
+            <td class="dim">Memory</td>
+            <td class="col-us"><span class="ok">✓</span>Character state persists forever</td>
+            <td><span class="no">✕</span>Progress saves only; no character growth</td>
+            <td><span class="no">✕</span>Gone when the tab closes</td>
+          </tr>
+          <tr>
+            <td class="dim">World</td>
+            <td class="col-us"><span class="ok">✓</span>Co-created in five questions</td>
+            <td><span class="no">✕</span>Fixed, official setting</td>
+            <td><span class="no">✕</span>You write a novel-length prompt</td>
+          </tr>
+          <tr>
+            <td class="dim">Language</td>
+            <td class="col-us"><span class="ok">✓</span>Written for Chinese first</td>
+            <td><span class="no">△</span>Mostly translated works</td>
+            <td><span class="no">△</span>Translated feel, thin wuxia flavor</td>
+          </tr>
+          <tr>
+            <td class="dim">Data</td>
+            <td class="col-us"><span class="ok">✓</span>100% local; export anytime</td>
+            <td><span class="no">△</span>Varies by vendor</td>
+            <td><span class="no">✕</span>Lives on their servers</td>
+          </tr>
+          <tr>
+            <td class="dim">Models</td>
+            <td class="col-us"><span class="ok">✓</span>OpenAI / Claude / Ollama, swappable</td>
+            <td><span class="no">✕</span>Locked engine</td>
+            <td><span class="no">✕</span>Locked model</td>
+          </tr>
+          <tr>
+            <td class="dim">Cost</td>
+            <td class="col-us"><span class="ok">✓</span>Free &amp; open source; you control model spend</td>
+            <td><span class="no">△</span>Purchase or in-app</td>
+            <td><span class="no">△</span>Subscription</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= QUICK START ================= -->
+<section id="start">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">05 · QUICK START</span>
+      <h2>From install to first story: <em>under three minutes</em></h2>
+      <p class="lead">Time goes into the story, not the setup — that's our only definition of "good onboarding".</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal" style="--d:.05s">
+        <span class="num">01</span>
+        <h3>Install</h3>
+        <p>One line, from PyPI. No repo clone, no build step.</p>
+        <div class="cmd">
+          <span class="dollar">$</span>
+          <code>pip install lonely-world</code>
+          <button class="copy-btn" data-copy="pip install lonely-world">Copy</button>
+        </div>
+      </div>
+      <div class="step reveal" style="--d:.15s">
+        <span class="num">02</span>
+        <h3>Point it at a model</h3>
+        <p>First launch walks you through API key, base URL and model name. Keys go into the OS keychain; a plaintext config file is only the fallback.</p>
+        <div class="cmd">
+          <span class="dollar">$</span>
+          <code>lonely-world</code>
+          <button class="copy-btn" data-copy="lonely-world">Copy</button>
+        </div>
+      </div>
+      <div class="step reveal" style="--d:.25s">
+        <span class="num">03</span>
+        <h3>Co-create, then play</h3>
+        <p>Five questions raise your world; then type your first action. <b style="color:var(--amber-hi)">help</b> lists commands, <b style="color:var(--amber-hi)">undo</b> takes back any line.</p>
+        <div class="cmd">
+          <span class="dollar">$</span>
+          <code>你：推门走进客栈。</code>
+          <button class="copy-btn" data-copy="推门走进客栈。">Copy</button>
+        </div>
+      </div>
+    </div>
+    <div class="web-note reveal">
+      <span class="lbl">PREFER A WINDOW?</span>
+      <p>Install the web extra and run <code>lonely-world-web</code>, then open <a href="http://localhost:7860">localhost:7860</a> — multi-user, with independent saves per session. <code>pip install "lonely-world[web]"</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TRUST ================= -->
+<section id="trust" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">06 · TRUST &amp; SAFETY</span>
+      <h2>Your story <em>stays yours</em></h2>
+    </div>
+    <div class="trust">
+      <div class="tcard reveal" style="--d:.05s">
+        <span class="icon">📜</span>
+        <h3>MIT open source</h3>
+        <p>Everything is public, auditable and modifiable. The business model isn't locking you in — it's being good enough to keep you.</p>
+      </div>
+      <div class="tcard reveal" style="--d:.15s">
+        <span class="icon">🗄️</span>
+        <h3>100% local saves</h3>
+        <p>Characters and stories live in the <code>local/</code> directory on your machine. Deleting the folder is what "deleting" actually means.</p>
+      </div>
+      <div class="tcard reveal" style="--d:.25s">
+        <span class="icon">🔐</span>
+        <h3>Keys in the keychain</h3>
+        <p>API keys go into the OS keychain (Keychain / Credential Manager / Secret Service) first; plaintext config is only the fallback.</p>
+      </div>
+      <div class="tcard reveal" style="--d:.35s">
+        <span class="icon">📦</span>
+        <h3>Assets you can leave with</h3>
+        <p>One-command export to story.md and character JSON. Three months of jianghu as Markdown — not rows in someone's database.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section id="faq" style="background:var(--bg-2);border-top:1px solid var(--line-soft)">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">07 · FAQ</span>
+      <h2>Before you press Enter</h2>
+    </div>
+    <div class="faq reveal">
+      <details open>
+        <summary><span class="q">Q1</span>What does it cost?<span class="arr">＋</span></summary>
+        <div class="a">The game is MIT-licensed and free. You pay only for the model API you point it at — typically pennies per session. With a local Ollama / vLLM model it costs nothing at all.</div>
+      </details>
+      <details>
+        <summary><span class="q">Q2</span>Do I need to use a terminal?<span class="arr">＋</span></summary>
+        <div class="a">No. Install the web extra (<code>pip install "lonely-world[web]"</code>) and run <code>lonely-world-web</code>, then open <code>localhost:7860</code> — create or pick a character entirely in the browser.</div>
+      </details>
+      <details>
+        <summary><span class="q">Q3</span>Which models does it support?<span class="arr">＋</span></summary>
+        <div class="a">Any OpenAI-compatible API: OpenAI, Anthropic Claude, and local models via Ollama or vLLM. Switch with <code>--provider</code> or environment variables — models change, saves don't.</div>
+      </details>
+      <details>
+        <summary><span class="q">Q4</span>Where does my data live?<span class="arr">＋</span></summary>
+        <div class="a">Entirely in the <code>local/</code> directory on your machine; nothing touches a third-party server except the model API you configure. API keys go to the system keychain, and stories export to Markdown.</div>
+      </details>
+      <details>
+        <summary><span class="q">Q5</span>Will it "forget" things in long campaigns?<span class="arr">＋</span></summary>
+        <div class="a">That's the core engineering: token-aware context trimming plus automatic memory compression. Key facts and grudges get archived and kept, not truncated away.</div>
+      </details>
+      <details>
+        <summary><span class="q">Q6</span>The AI took the story somewhere I hate. Now what?<span class="arr">＋</span></summary>
+        <div class="a">Type <code>undo</code>. The last turn is rolled back and the world behaves as if it never happened. You hold final cut on your story.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section class="final" id="final">
+  <span class="giant">孤</span>
+  <div class="wrap">
+    <h2 class="reveal">The inn lamp is already lit.<br><em>All that's missing is you.</em></h2>
+    <p class="lead reveal" style="margin-bottom:44px">Lonely World is never lonely — the whole world is waiting to answer you.</p>
+    <div class="cta-row reveal">
+      <a class="btn btn-pri" href="#start">Start your story</a>
+      <a class="btn btn-gho" href="https://github.com/panna-arts/lonely-world" target="_blank" rel="noopener">Star on GitHub ⭐</a>
+    </div>
+    <div class="install-pill reveal">
+      <span><span class="dollar">$</span> pip install lonely-world</span>
+      <button class="copy-btn" data-copy="pip install lonely-world">Copy</button>
+    </div>
+    <p class="whisper">AN UNWRITTEN WORLD · ONE LINE AT A TIME</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <span class="seal">孤</span>
+        <span>Lonely World<small style="display:block;font-family:var(--mono);font-weight:400;font-size:10.5px;color:var(--faint)">孤独世界 · v0.2.0</small></span>
+      </div>
+      <div class="foot-links">
+        <a href="https://github.com/panna-arts/lonely-world" target="_blank" rel="noopener">GITHUB</a>
+        <a href="https://pypi.org/project/lonely-world/" target="_blank" rel="noopener">PYPI</a>
+        <a href="https://github.com/panna-arts/lonely-world/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG</a>
+        <a href="https://github.com/panna-arts/lonely-world/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">CONTRIBUTING</a>
+        <a href="https://github.com/panna-arts/lonely-world/issues" target="_blank" rel="noopener">ISSUES</a>
+        <a href="index.html" hreflang="zh-CN">中文</a>
+      </div>
+    </div>
+    <p class="foot-fine">MIT LICENSE · MADE WITH LANTERN LIGHT &amp; LLMs · YOUR STORY NEVER LEAVES YOUR DISK</p>
+  </div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  document.querySelectorAll('.copy-btn').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const text = btn.dataset.copy || '';
+      try{ await navigator.clipboard.writeText(text); }
+      catch(_){
+        const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);
+        ta.select();document.execCommand('copy');ta.remove();
+      }
+      const old=btn.textContent; btn.textContent='Copied ✓'; btn.classList.add('done');
+      setTimeout(()=>{btn.textContent=old;btn.classList.remove('done');},1600);
+    });
+  });
+
+  (function(){
+    const body=document.getElementById('termBody');
+    if(!body) return;
+    const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const script=[
+      {t:'cmd', s:'lonely-world'},
+      {t:'sys', s:'已存在角色：', n:1},
+      {t:'sys', s:'  1. 李逍遥'},
+      {t:'sys', s:'  2. 林月如'},
+      {t:'sys', s:'  0. 创建新角色'},
+      {t:'sys', s:'请选择角色编号：1'},
+      {t:'sys', s:'已载入角色：李逍遥', n:1},
+      {t:'sys', s:'—— 上次对话回顾 ——', n:1},
+      {t:'you', s:'推门走进客栈。', n:1},
+      {t:'npc', s:'客栈里灯火昏黄，几个江湖客正在低声交谈……', n:1},
+      {t:'sys', s:'进入游戏。输入 help 查看命令，quit 保存退出。', n:1},
+      {t:'you', s:'把长剑放在桌上，向小二要一壶热酒。', n:1},
+      {t:'npc', s:'小二眯眼一笑：「客官面生得很，是头回来洛阳吧？」', n:1},
+      {t:'you', s:'', n:1, caret:true}
+    ];
+    if(reduce){
+      script.forEach(l=>{
+        const d=document.createElement('span');
+        d.className='t-'+l.t+(l.n?' t-new':'');
+        d.textContent=l.s; body.appendChild(d);
+        if(l.caret){const c=document.createElement('span');c.className='caret';body.appendChild(c);}
+      });
+      return;
+    }
+    const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+    let first=true;
+    async function play(){
+      while(true){
+        body.innerHTML='';
+        for(const l of script){
+          const d=document.createElement('span');
+          d.className='t-'+l.t+(l.n?' t-new':'');
+          if(!first) d.classList.add('term-fade');
+          body.appendChild(d);
+          if(l.caret){
+            const c=document.createElement('span');c.className='caret';body.appendChild(c);
+            await sleep(2600); continue;
+          }
+          if(l.t==='you'){
+            for(const ch of l.s){ d.textContent+=ch; await sleep(55+Math.random()*70); }
+            await sleep(500);
+          }else{
+            d.textContent=l.s;
+            await sleep(l.t==='cmd'?650:420);
+          }
+        }
+        first=false;
+        await sleep(6000);
+      }
+    }
+    play();
+  })();
+</script>
+<script>
+/* ---------- Interactive demo (pre-scripted, bilingual) ---------- */
+(function(){
+  const body=document.getElementById('demoBody');
+  const root=document.getElementById('demoRoot');
+  const endPanel=document.getElementById('demoEnd');
+  const marksBox=document.getElementById('demoMarks');
+  const chips={};
+  document.querySelectorAll('.chip-row .v[data-k]').forEach(el=>chips[el.dataset.k]=el);
+  if(!body||!root) return;
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const auto=new URLSearchParams(location.search).get('demo')==='auto';
+
+  const SCENES={
+    s0:{chips:{身份:'镖师 · Escort',银钱:'所剩无几 · Nearly broke',线索:'无 · None',恩怨:'无 · None',时辰:'戌时 · Dusk'},text:[
+      {t:'n',s:'洛阳，雨夜。城南老客栈的灯笼被风吹得晃了晃。',en:'Luoyang. A rainy night. The lanterns of the old inn in the south of the city sway in the wind.'},
+      {t:'n',s:'你叫顾远舟，走镖七年。三天前，你押的最后一趟镖在潼关道上失踪——连同六个兄弟，一个都没回来。',en:'You are Gu Yuanzhou, seven years an armed escort. Three days ago your last convoy vanished on the Tongguan road — with all six of your men.'},
+      {t:'n',s:'你推门进来，抖落一身雨水。堂中三五个江湖客在低声谈话；角落里，有个灰衣人从你进门起就一直没有低头。',en:'You push the door open and shake off the rain. A few riders mutter over their drinks — and in the corner, a man in grey has not looked up once since you entered.',p:500}
+    ],choices:[
+      {cn:'A',tag:'听风 · Eavesdrop',s:'Order warm wine and listen from a corner',cnx:'要一壶热酒，坐到角落去听',to:'sA'},
+      {cn:'B',tag:'按剑 · Hand on hilt',s:'Go straight upstairs; sleep on your sword',cnx:'直接上楼开房，把剑压在枕下',to:'sB'},
+      {cn:'C',tag:'探问 · Approach',s:'Walk straight to the man in grey',cnx:'走向那个灰衣人',to:'sC'}
+    ]},
+    sA:{chips:{线索:'废庙销赃 · Loot at the temple',时辰:'亥时 · Late night'},text:[
+      {t:'n',s:'酒是温的。掌柜把碗放下时，手在抖。',en:'The wine is warm. The innkeeper\'s hand trembles as he sets the bowl down.'},
+      {t:'say',s:'「客官，」他的声音压得极低，「潼关道上丢的那趟镖……听说今夜有人在城西废庙销赃。」',en:'"Friend," he whispers, "the convoy lost on the Tongguan road… they say the loot surfaces tonight, at the ruined temple west of the city."'},
+      {t:'n',s:'隔壁桌有人嗤笑：「鬼见愁的地界，也敢去？」你的手停在碗沿上——鬼见愁，正是你丢镖的地方。',en:'Someone snorts: "Ghost\'s Grief? Nobody goes there." Your hand freezes on the rim of the bowl — Ghost\'s Grief is exactly where you lost the convoy.',p:500}
+    ],choices:[
+      {cn:'A',tag:'穷问 · Press',s:'Stand up; press him for details',cnx:'起身，追问销赃的细节',to:'s2'},
+      {cn:'B',tag:'暗记 · Mark',s:'Say nothing; memorize the speaker\'s face',cnx:'不动声色，记下说话人的脸',to:'s2'}
+    ]},
+    sB:{chips:{线索:'废庙之约 · A note, a meeting',时辰:'三更 · Third watch'},text:[
+      {t:'n',s:'楼板在脚下吱呀作响。你吹了灯，剑横在枕边，和衣而卧。',en:'The floorboards creak. You blow out the lamp, lay your sword by the pillow, and sleep in your clothes.'},
+      {t:'n',s:'三更前后，走廊里传来脚步声——很轻，在你门口停住了。',en:'Around the third watch, footsteps in the corridor — very soft. They stop at your door.'},
+      {t:'n',s:'没有敲门。一张折起的纸条从门缝下被推进来，脚步声随即远去。',en:'No knock. A folded note slides under the door; the footsteps fade away.'},
+      {t:'you',s:'（展开纸条）',en:'(You unfold the note.)'},
+      {t:'say',s:'「想知道镖去了哪里——三更，城西废庙。一个欠顾家命的人」',en:'"Want to know where the convoy went — third watch, the ruined temple west of the city. Someone who owes the Gu family a life."',p:500}
+    ],choices:[
+      {cn:'A',tag:'赴约 · Keep the meet',s:'Go to the temple as asked',cnx:'如约赴庙',to:'s2'},
+      {cn:'B',tag:'循迹 · Track',s:'Chase the footsteps into the night',cnx:'吹灯拔闩，追上那脚步声',to:'s2'}
+    ]},
+    sC:{chips:{线索:'师门之谜 · The master lives?',恩怨:'师门纠葛 · Old master debts',时辰:'亥时 · Late night'},text:[
+      {t:'n',s:'你在他对面坐下。灰衣人抬起头：一张陌生的脸，一双见过大风浪的眼睛。',en:'You sit down across from him. The man in grey looks up: a stranger\'s face — and the eyes of someone who has survived storms.'},
+      {t:'say',s:'「孤鸿十三式，」他先开了口，「三年前名动河洛。顾清秋的记名弟子，怎么会沦落到走潼关的镖？」',en:'"The Thirteen Forms of the Lone Goose," he says first. "Famous across the Luo river lands, three years ago. How does Gu Qingqiu\'s sworn disciple end up hauling convoys on the Tongguan road?"'},
+      {t:'n',s:'你浑身一僵——师父顾清秋，三个月前已经死在你面前。',en:'You go rigid. Your master Gu Qingqiu died in front of you three months ago.'},
+      {t:'say',s:'灰衣人盯着你，一字一顿：「他没死。想见他，三更，城西废庙。」',en:'The grey man meets your eyes, weighing every word: "He is alive. Third watch. The ruined temple. If you want to see him."',p:500}
+    ],choices:[
+      {cn:'A',tag:'逼问 · Seize',s:'Grab his wrist; make him explain',cnx:'攥住他的手腕，逼他说清楚',to:'s2'},
+      {cn:'B',tag:'跟踪 · Shadow',s:'Feign disbelief; follow him when the room empties',cnx:'佯装不信，散场后暗中跟住他',to:'s2'}
+    ]},
+    s2:{chips:{线索:'废庙之约 · The ruined temple',时辰:'三更 · Third watch'},text:[
+      {t:'n',s:'无论哪条路，所有的线都指向同一个地方——城西废庙，三更。',en:'Every road, every rumor — they all point to one place. The ruined temple, west of the city. Third watch.'},
+      {t:'n',s:'雨停了。你提灯出门，长街尽头的月亮泡在水洼里。破庙的轮廓伏在夜色深处，像一头睡着的兽。',en:'The rain has stopped. You carry your lantern down the long street; the moon soaks in a puddle. Ahead, the temple crouches in the dark like a sleeping beast.',p:500}
+    ],choices:[
+      {cn:'A',tag:'赴约 · Front door',s:'Hidden blade; walk in the front',cnx:'暗藏短刃，正门赴约',to:'s3'},
+      {cn:'B',tag:'潜行 · Over the wall',s:'Circle around back; over the wall',cnx:'绕到庙后，翻墙而入',to:'s3'},
+      {cn:'C',tag:'伏击 · The tree',s:'Climb the old locust; watch and wait',cnx:'伏上庙外老槐树，静观其变',to:'s3'}
+    ]},
+    s3:{chips:{线索:'师父未死 · The master lives',恩怨:'+1 · A debt reopened',时辰:'三更 · Third watch'},end:true,text:[
+      {t:'n',s:'庙里有火光。有人背对着门，正往火堆里添柴。',en:'Firelight inside. Someone stands with their back to the door, feeding the flames.'},
+      {t:'n',s:'那人身形一动，你握紧了刀柄——可当他缓缓摘下斗笠、转过脸来时，你全身的血都凉了。',en:'The figure stirs; your grip tightens on the hilt — and then he lifts his hat and turns, and every drop of blood in you runs cold.'},
+      {t:'n',s:'那是顾清秋。你的师父。三个月前，在你面前咽气的人。',en:'It is Gu Qingqiu. Your master. The man who died in front of you three months ago.'},
+      {t:'say',s:'「镖没有丢，」他说，「远舟——是我让你丢的。」',en:'"The convoy was never lost," he says. "Yuanzhou — I am the one who took it from you."'},
+      {t:'n',s:'火堆爆出一粒火星。庙外铜铃轻响，灰衣人已等在原来的位置。',en:'A spark bursts from the fire. Outside, a small bell rings — the man in grey is waiting where he has always waited.',p:600}
+    ]}
+  };
+
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  let skip=false;
+  async function typeInto(el,text){
+    if(reduce){el.textContent=text;return;}
+    for(const ch of text){
+      if(skip){el.textContent=text;skip=false;return;}
+      el.textContent+=ch;
+      await sleep(14+Math.random()*24);
+    }
+  }
+  function setChips(map){
+    for(const k in map){
+      const el=chips[k]; if(!el) continue;
+      el.textContent=map[k];
+      el.classList.remove('up'); void el.offsetWidth; el.classList.add('up');
+    }
+  }
+  function addMark(tag){
+    const empty=marksBox.querySelector('.mark-empty');
+    if(empty) empty.remove();
+    if([...marksBox.children].some(m=>m.textContent===tag)) return;
+    const m=document.createElement('span');m.className='mark';m.textContent=tag;
+    marksBox.appendChild(m);
+  }
+  function showChoices(list){
+    const box=document.createElement('div');box.className='demo-choices';
+    list.forEach((c,i)=>{
+      const b=document.createElement('button');
+      b.className='choice';b.style.animationDelay=(i*0.09)+'s';
+      b.innerHTML='<span class="cn">'+c.cn+'</span><span>'+c.s+'<span class="cnx">'+c.cnx+'</span></span>';
+      b.addEventListener('click',()=>{addMark(c.tag);showScene(c.to);});
+      box.appendChild(b);
+    });
+    body.appendChild(box);
+    if(auto) setTimeout(()=>box.querySelector('.choice').click(),1100);
+  }
+  async function showScene(id){
+    const sc=SCENES[id];
+    skip=false; body.innerHTML='';
+    setChips(sc.chips);
+    for(const p of sc.text){
+      const wrap=document.createElement('div');wrap.className='d-para-wrap';
+      const el=document.createElement('p');
+      el.className='d-para'+(p.t==='you'?' d-you':p.t==='say'?' d-say':'');
+      wrap.appendChild(el);
+      body.appendChild(wrap);
+      await typeInto(el,p.s);
+      if(p.en){
+        const en=document.createElement('span');
+        en.className='d-en';en.textContent=p.en;
+        wrap.appendChild(en);
+      }
+      await sleep(p.p||(reduce?80:340));
+    }
+    if(sc.end){
+      await sleep(reduce?100:700);
+      endPanel.hidden=false;
+      return;
+    }
+    showChoices(sc.choices);
+  }
+  root.addEventListener('click',e=>{
+    if(e.target.closest('.choice')||e.target.closest('.copy-btn')||e.target.closest('.restart')) return;
+    if(document.querySelector('.demo-choices')) return;
+    skip=true;
+  });
+  document.getElementById('demoRestart').addEventListener('click',()=>{
+    endPanel.hidden=true;
+    marksBox.innerHTML='<span class="mark mark-empty">no moves yet</span>';
+    showScene('s0');
+  });
+  showScene('s0');
+})();
+</script>
+</body>
+</html>
